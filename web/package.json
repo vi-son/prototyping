@@ -1,0 +1,19 @@
+{
+  "name": "web",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "essentia": "^0.1.1",
+    "essentia.js": "0.0.9"
+  },
+  "devDependencies": {
+    "rollup": "^2.16.1"
+  }
+}
