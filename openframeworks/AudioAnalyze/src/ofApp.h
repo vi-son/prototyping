@@ -69,6 +69,7 @@ public:
   bool isOnset;
 
   ofParameter<float> _par_smoothing;
+  ofParameter<std::string> _par_audiofile;
 
   /// Dat Gui event handler
   void onSliderEvent(ofxDatGuiSliderEvent e);

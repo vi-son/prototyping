@@ -7,15 +7,20 @@ void ofApp::setup(){
     
     sampleRate = 44100;
     bufferSize = 512;
-    int channels = 1;
+    int channels = 2;
     
     audioAnalyzer.setup(sampleRate, bufferSize, channels);
     
-    player.load("beatTrack.wav");
+    player.load("audio/beatTrack.wav");
 
     _gui = new ofxDatGui(50, 50);
     _par_smoothing.set("Smoothing", 0, 0.0, 1.0);
     _gui->addSlider(_par_smoothing);
+
+    _par_audiofile.set("Audiofile");
+    _gui->addTextInput(_par_audiofile);
+
+    _gui->addHeader(" + ");
 
     _gui->onSliderEvent(this, &ofApp::onSliderEvent);
    
@@ -72,9 +77,7 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-    
     //-Single value Algorithms:
-    
     ofPushMatrix();
     ofTranslate(350, 0);
     int mw = 250;
@@ -213,11 +216,8 @@ void ofApp::draw(){
     ofPopMatrix();
     
     //-Vector Values Algorithms:
-    
     ofPushMatrix();
-    
     ofTranslate(700, 0);
-    
     int graphH = 75;
     int yoffset = graphH + 50;
     ypos = 30;
@@ -300,29 +300,30 @@ void ofApp::draw(){
 void ofApp::keyPressed(int key){
     player.stop();
     switch (key) {
-       
-        case '1':
-            player.load("test440mono.wav");
-            break;
-        case '2':
-            player.load("flute.wav");
-            break;
-        case '3':
-            player.load("chord.wav");
-            break;
-        case '4':
-            player.load("cadence.wav");
-            break;
-        case '5':
-            player.load("beatTrack.wav");
-            break;
-        case '6':
-            player.load("noise.wav");
-            break;
-            
-            
-        default:
-            break;
+    case '1':
+      player.load("audio/test440mono.wav");
+      break;
+    case '2':
+      player.load("audio/flute.wav");
+      break;
+    case '3':
+      player.load("audio/chord.wav");
+      break;
+    case '4':
+      player.load("audio/cadence.wav");
+      break;
+    case '5':
+      player.load("audio/beatTrack.wav");
+      break;
+    case '6':
+      player.load("audio/noise.wav");
+      break;
+    case '7':
+      player.load("audio/patterns.202006.mp3");
+      break;
+
+    default:
+      break;
     }
     player.play();
     
