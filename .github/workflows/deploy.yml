@@ -31,14 +31,14 @@ jobs:
       with:
         ssh-private-key: ${{ secrets.SSH_KEY }}
 
-    - name: Change dir to web/
-      run: cd web
-
     - name: Install npm dependencies
       run: npm install
+      working-directory: ./web
 
     - name: JS
       run: npm run build
+      working-directory: ./web
 
     - name: Deploy to uberspace
       run: rsync -e ssh -azvhP -r public/ uberspace:/var/www/virtual/guido/sandbox.mixing-senses.art/
+      working-directory: ./web
