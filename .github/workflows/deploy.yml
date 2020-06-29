@@ -40,5 +40,5 @@ jobs:
       working-directory: ./web
 
     - name: Deploy to uberspace
-      run: rsync -e ssh -azvhP -r public/ uberspace:/var/www/virtual/guido/sandbox.mixing-senses.art/
-      working-directory: ./web
+      run: rsync -e ssh -azvhP -r . uberspace:/var/www/virtual/guido/sandbox.mixing-senses.art/
+      working-directory: ./web/public
