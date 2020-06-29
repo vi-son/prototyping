@@ -32,7 +32,7 @@ jobs:
         ssh-private-key: ${{ secrets.SSH_KEY }}
 
     - name: Change dir to web/
-      uses: cd web
+      run: cd web
 
     - name: Install npm dependencies
       run: npm install
