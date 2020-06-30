@@ -1,0 +1,6 @@
+[submodule "web/src/rouge"]
+	path = web/src/rouge
+	url = git@github.com:guidoschmidt/vi.son-rouge.git
+[submodule "web/src/sass/rouge"]
+	path = web/src/sass/rouge
+	url = git@github.com:guidoschmidt/vi.son-rouge.git
