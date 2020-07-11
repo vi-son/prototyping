@@ -1,0 +1,6 @@
+.DS_*
+*.log
+logs
+node_modules/
+.cache/
+

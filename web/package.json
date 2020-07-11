@@ -4,16 +4,21 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "npx parcel src/html/index.html",
+    "build": "npx parcel build src/html/index.html --out-dir public/"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "essentia": "^0.1.1",
-    "essentia.js": "0.0.9"
+    "essentia.js": "0.0.9",
+    "vue": "^2.6.11"
   },
   "devDependencies": {
-    "rollup": "^2.16.1"
+    "parcel": "^1.12.4",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "sass": "^1.26.9"
   }
 }

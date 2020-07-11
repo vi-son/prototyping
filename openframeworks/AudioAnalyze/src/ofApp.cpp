@@ -2,21 +2,27 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-    
-    ofBackground(34);
+    ofBackground(0);
     ofSetFrameRate(60);
     
     sampleRate = 44100;
     bufferSize = 512;
-    int channels = 1;
+    int channels = 2;
     
     audioAnalyzer.setup(sampleRate, bufferSize, channels);
     
-    player.load("beatTrack.wav");
-    
-    gui.setup();
-    gui.setPosition(20, 150);
-    gui.add(smoothing.setup  ("Smoothing", 0.0, 0.0, 1.0));
+    player.load("audio/beatTrack.wav");
+
+    _gui = new ofxDatGui(50, 50);
+    _par_smoothing.set("Smoothing", 0, 0.0, 1.0);
+    _gui->addSlider(_par_smoothing);
+
+    _par_audiofile.set("Audiofile");
+    _gui->addTextInput(_par_audiofile);
+
+    _gui->addHeader(" + ");
+
+    _gui->onSliderEvent(this, &ofApp::onSliderEvent);
    
 }
 
@@ -32,37 +38,37 @@ void ofApp::update(){
     audioAnalyzer.analyze(soundBuffer);
     
     //-:get Values:
-    rms     = audioAnalyzer.getValue(RMS, 0, smoothing);
-    power   = audioAnalyzer.getValue(POWER, 0, smoothing);
-    pitchFreq = audioAnalyzer.getValue(PITCH_FREQ, 0, smoothing);
-    pitchConf = audioAnalyzer.getValue(PITCH_CONFIDENCE, 0, smoothing);
-    pitchSalience  = audioAnalyzer.getValue(PITCH_SALIENCE, 0, smoothing);
-    inharmonicity   = audioAnalyzer.getValue(INHARMONICITY, 0, smoothing);
-    hfc = audioAnalyzer.getValue(HFC, 0, smoothing);
-    specComp = audioAnalyzer.getValue(SPECTRAL_COMPLEXITY, 0, smoothing);
-    centroid = audioAnalyzer.getValue(CENTROID, 0, smoothing);
-    rollOff = audioAnalyzer.getValue(ROLL_OFF, 0, smoothing);
-    oddToEven = audioAnalyzer.getValue(ODD_TO_EVEN, 0, smoothing);
-    strongPeak = audioAnalyzer.getValue(STRONG_PEAK, 0, smoothing);
-    strongDecay = audioAnalyzer.getValue(STRONG_DECAY, 0, smoothing);
+    rms     = audioAnalyzer.getValue(RMS, 0, _par_smoothing.get());
+    power   = audioAnalyzer.getValue(POWER, 0, _par_smoothing.get());
+    pitchFreq = audioAnalyzer.getValue(PITCH_FREQ, 0, _par_smoothing.get());
+    pitchConf = audioAnalyzer.getValue(PITCH_CONFIDENCE, 0, _par_smoothing.get());
+    pitchSalience  = audioAnalyzer.getValue(PITCH_SALIENCE, 0, _par_smoothing.get());
+    inharmonicity   = audioAnalyzer.getValue(INHARMONICITY, 0, _par_smoothing.get());
+    hfc = audioAnalyzer.getValue(HFC, 0, _par_smoothing.get());
+    specComp = audioAnalyzer.getValue(SPECTRAL_COMPLEXITY, 0, _par_smoothing.get());
+    centroid = audioAnalyzer.getValue(CENTROID, 0, _par_smoothing.get());
+    rollOff = audioAnalyzer.getValue(ROLL_OFF, 0, _par_smoothing.get());
+    oddToEven = audioAnalyzer.getValue(ODD_TO_EVEN, 0, _par_smoothing.get());
+    strongPeak = audioAnalyzer.getValue(STRONG_PEAK, 0, _par_smoothing.get());
+    strongDecay = audioAnalyzer.getValue(STRONG_DECAY, 0, _par_smoothing.get());
     //Normalized values for graphic meters:
-    pitchFreqNorm   = audioAnalyzer.getValue(PITCH_FREQ, 0, smoothing, TRUE);
-    hfcNorm     = audioAnalyzer.getValue(HFC, 0, smoothing, TRUE);
-    specCompNorm = audioAnalyzer.getValue(SPECTRAL_COMPLEXITY, 0, smoothing, TRUE);
-    centroidNorm = audioAnalyzer.getValue(CENTROID, 0, smoothing, TRUE);
-    rollOffNorm  = audioAnalyzer.getValue(ROLL_OFF, 0, smoothing, TRUE);
-    oddToEvenNorm   = audioAnalyzer.getValue(ODD_TO_EVEN, 0, smoothing, TRUE);
-    strongPeakNorm  = audioAnalyzer.getValue(STRONG_PEAK, 0, smoothing, TRUE);
-    strongDecayNorm = audioAnalyzer.getValue(STRONG_DECAY, 0, smoothing, TRUE);
+    pitchFreqNorm   = audioAnalyzer.getValue(PITCH_FREQ, 0, _par_smoothing.get(), TRUE);
+    hfcNorm     = audioAnalyzer.getValue(HFC, 0, _par_smoothing.get(), TRUE);
+    specCompNorm = audioAnalyzer.getValue(SPECTRAL_COMPLEXITY, 0, _par_smoothing.get(), TRUE);
+    centroidNorm = audioAnalyzer.getValue(CENTROID, 0, _par_smoothing.get(), TRUE);
+    rollOffNorm  = audioAnalyzer.getValue(ROLL_OFF, 0, _par_smoothing.get(), TRUE);
+    oddToEvenNorm   = audioAnalyzer.getValue(ODD_TO_EVEN, 0, _par_smoothing.get(), TRUE);
+    strongPeakNorm  = audioAnalyzer.getValue(STRONG_PEAK, 0, _par_smoothing.get(), TRUE);
+    strongDecayNorm = audioAnalyzer.getValue(STRONG_DECAY, 0, _par_smoothing.get(), TRUE);
     
-    dissonance = audioAnalyzer.getValue(DISSONANCE, 0, smoothing);
+    dissonance = audioAnalyzer.getValue(DISSONANCE, 0, _par_smoothing.get());
     
-    spectrum = audioAnalyzer.getValues(SPECTRUM, 0, smoothing);
-    melBands = audioAnalyzer.getValues(MEL_BANDS, 0, smoothing);
-    mfcc = audioAnalyzer.getValues(MFCC, 0, smoothing);
-    hpcp = audioAnalyzer.getValues(HPCP, 0, smoothing);
+    spectrum = audioAnalyzer.getValues(SPECTRUM, 0, _par_smoothing.get());
+    melBands = audioAnalyzer.getValues(MEL_BANDS, 0, _par_smoothing.get());
+    mfcc = audioAnalyzer.getValues(MFCC, 0, _par_smoothing.get());
+    hpcp = audioAnalyzer.getValues(HPCP, 0, _par_smoothing.get());
     
-    tristimulus = audioAnalyzer.getValues(TRISTIMULUS, 0, smoothing);
+    tristimulus = audioAnalyzer.getValues(TRISTIMULUS, 0, _par_smoothing.get());
     
     isOnset = audioAnalyzer.getOnsetValue(0);
   
@@ -71,9 +77,7 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-    
     //-Single value Algorithms:
-    
     ofPushMatrix();
     ofTranslate(350, 0);
     int mw = 250;
@@ -212,11 +216,8 @@ void ofApp::draw(){
     ofPopMatrix();
     
     //-Vector Values Algorithms:
-    
     ofPushMatrix();
-    
     ofTranslate(700, 0);
-    
     int graphH = 75;
     int yoffset = graphH + 50;
     ypos = 30;
@@ -292,48 +293,37 @@ void ofApp::draw(){
     }
     ofPopMatrix();
     
-
     ofPopMatrix();
-    
-    //-Gui & info:
-    
-    gui.draw();
-    ofSetColor(255);
-    ofDrawBitmapString("ofxAudioAnalyzer\n\nALL ALGORITHMS EXAMPLE", 10, 32);
-    ofSetColor(ofColor::hotPink);
-    ofDrawBitmapString("Keys 1-6: Play audio tracks", 10, 100);
-    
-
-    
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
     player.stop();
     switch (key) {
-       
-        case '1':
-            player.load("test440mono.wav");
-            break;
-        case '2':
-            player.load("flute.wav");
-            break;
-        case '3':
-            player.load("chord.wav");
-            break;
-        case '4':
-            player.load("cadence.wav");
-            break;
-        case '5':
-            player.load("beatTrack.wav");
-            break;
-        case '6':
-            player.load("noise.wav");
-            break;
-            
-            
-        default:
-            break;
+    case '1':
+      player.load("audio/test440mono.wav");
+      break;
+    case '2':
+      player.load("audio/flute.wav");
+      break;
+    case '3':
+      player.load("audio/chord.wav");
+      break;
+    case '4':
+      player.load("audio/cadence.wav");
+      break;
+    case '5':
+      player.load("audio/beatTrack.wav");
+      break;
+    case '6':
+      player.load("audio/noise.wav");
+      break;
+    case '7':
+      player.load("audio/patterns.202006.mp3");
+      break;
+
+    default:
+      break;
     }
     player.play();
     
@@ -391,4 +381,10 @@ void ofApp::gotMessage(ofMessage msg){
 //--------------------------------------------------------------
 void ofApp::dragEvent(ofDragInfo dragInfo){ 
 
+}
+
+
+//--------------------------------------------------------------
+void ofApp::onSliderEvent(ofxDatGuiSliderEvent e) {
+  
 }
