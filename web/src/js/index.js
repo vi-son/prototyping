@@ -53,7 +53,7 @@ loadBuffer(clicks).then(buffer => {
   filter.type = "highpass";
   filter.frequency.value = 140;
   source.connect(context.destination);
-  source.start(0);
+  // source.start(0);
 });
 const slider = document.createElement("input");
 slider.type = "range";
