@@ -13,9 +13,9 @@ const size = {
 const ctx = createContext(size);
 const cube = createCube();
 const camera = createCamera({
-  fov: Math.PI / 4,
+  fov: Math.PI / 5,
   aspect: ctx.gl.canvas.width / ctx.gl.canvas.height,
-  position: [0, 0, 6],
+  position: [0, 0, 50],
   target: [0, 0, 0]
 });
 
@@ -23,7 +23,7 @@ createOrbiter({ camera: camera, distance: 10 });
 
 const clearCmd = {
   pass: ctx.pass({
-    clearColor: [0, 0, 0, 1],
+    clearColor: [0.9, 0.9, 0.9, 1],
     clearDepth: 1
   })
 };
@@ -54,20 +54,42 @@ const drawCmd = {
 };
 
 const corners = [
-  [0, 0, 0],
-  [1, 0, 0],
-  [1, 1, 0],
-  [0, 1, 0]
+  [-10, 0, 0],
+  [-8, 2, 0],
+  [8, -2, 0],
+  [10, 0, 0]
 ];
+
+const vertexShader = glsl.compile(
+  require("../glsl/shader-library/webgl/basic/pex.lines.vert.glsl")
+);
+const fragmentShader = glsl.compile(
+  require("../glsl/shader-library/webgl/basic/pex.white.frag.glsl")
+);
+
+const drawPoints = {
+  pipeline: ctx.pipeline({
+    vert: vertexShader,
+    frag: fragmentShader,
+    depthTest: true,
+    primitive: ctx.Primitive.Points
+  }),
+  attributes: {
+    aPosition: ctx.vertexBuffer(corners)
+  },
+  indices: ctx.indexBuffer([0, 1, 2, 3]),
+  uniforms: {
+    uProjectionMatrix: camera.projectionMatrix,
+    uViewMatrix: camera.viewMatrix,
+    uModelMatrix: mat4.create(),
+    uColor: [1, 0, 0, 1]
+  }
+};
 
 const drawLineStrip = {
   pipeline: ctx.pipeline({
-    vert: glsl.compile(
-      require("../glsl/shader-library/webgl/basic/pex.lines.vert.glsl")
-    ),
-    frag: glsl.compile(
-      require("../glsl/shader-library/webgl/basic/pex.white.frag.glsl")
-    ),
+    vert: vertexShader,
+    frag: fragmentShader,
     depthTest: true,
     primitive: ctx.Primitive.LineStrip
   }),
@@ -78,13 +100,14 @@ const drawLineStrip = {
   uniforms: {
     uProjectionMatrix: camera.projectionMatrix,
     uViewMatrix: camera.viewMatrix,
-    uModelMatrix: mat4.translate(mat4.create(), [-1, 0, 0]),
-    uColor: [1, 1, 1, 1]
+    uModelMatrix: mat4.create(),
+    uColor: [0, 0, 0, 1]
   }
 };
 
 ctx.frame(() => {
   ctx.submit(clearCmd);
-  ctx.submit(drawCmd);
+  // ctx.submit(drawCmd);
   ctx.submit(drawLineStrip);
+  ctx.submit(drawPoints);
 });

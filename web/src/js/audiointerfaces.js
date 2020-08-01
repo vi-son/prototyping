@@ -64,37 +64,3 @@ slider.oninput = e => {
   console.log(e.target.value);
   filter.frequency.value = e.target.value;
 };
-
-let essentia;
-let isEssentiaInstance = false;
-let essentiaExtractor;
-
-// async function useFeatureExtractor() {
-//   audioData = await essentiaExtractor.getAudioChannelDataFromURL(
-//     audioUrl,
-//     audioCtx
-//   );
-//   essentiaExtractor.frameSize = 1024;
-//   essentiaExtractor.hopSize = 512;
-//   essentiaExtractor.profile.MelBands.numberBands = 96;
-//   let logMelSpectrogram = essentiaExtractor.melSpectrogram(audioData);
-//   console.log(logMelSpectrogram);
-// }
-
-document.onreadystatechange = function() {
-  if (document.readyState === "complete") {
-    console.log("Document is ready...");
-    EssentiaModule().then(function(essentiaModule) {
-      if (!isEssentiaInstance) {
-        essentia = new Essentia(essentiaModule);
-        isEssentiaInstance = true;
-        console.log(essentia.version);
-
-        // audioData = async essentiaExtractor.getAudioChannelDataFromURL(audioUrl, audioCtx);
-        // essentiaExtractor = new EssentiaExtractor(essentiaModule);
-        // useFeatureExtractor();
-        console.log(isEssentiaInstance);
-      }
-    });
-  }
-};
