@@ -1,28 +1,52 @@
-import React, { useState } from "react";
+import React, { useState, useReducer } from "react";
 
 import "../../sass/components/DAW.sass";
 
 const DAW = ({ trackCount }) => {
-  const tracks = new Array(trackCount).fill(0).map((_, i) => i + 1);
+  const [context] = useState(new AudioContext());
+  const initialTracks = new Array(trackCount).fill(0).map((_, i) => {
+    return "";
+  });
+  const [trackNames, dispatchTrackNames] = useReducer(
+    (tracks, { idx, value }) => {
+      return tracks.map((e, i) => {
+        if (i === idx) {
+          return value;
+        } else {
+          return e;
+        }
+      });
+    },
+    initialTracks
+  );
   const [buffers, setBuffers] = useState(new Array(trackCount));
   const [dragOn, setDragOn] = useState(-1);
+  const [mix] = useState(
+    new Array(trackCount).fill(0).map(i => context.createBufferSource())
+  );
 
-  const handleDrop = ev => {
+  const handleDrop = (ev, i) => {
     ev.preventDefault();
-    console.log("Drop the base.");
+    console.log("Drop the base.", i);
     const fr = new FileReader();
+    fr.onload = function(e) {
+      const res = fr.result;
+      var source = context.createBufferSource();
+      context.decodeAudioData(res).then(e => {
+        mix[i].buffer = e;
+        // console.log("Ready");
+        console.log(mix[i]);
+      });
+    };
     if (ev.dataTransfer.items) {
       // Use DataTransferItemList interface to access the file(s)
-      for (var i = 0; i < ev.dataTransfer.items.length; i++) {
+      for (var x = 0; x < ev.dataTransfer.items.length; x++) {
         // If dropped items aren't files, reject them
-        if (ev.dataTransfer.items[i].kind === "file") {
-          var file = ev.dataTransfer.items[i].getAsFile();
-          const blob = fr.readAsArrayBuffer(file);
-          console.log(blob);
-          var context = new AudioContext();
-          var source = context.createBufferSource();
-          // source.buffer = file;
-          console.log("... file[" + i + "].name = " + file.name);
+        if (ev.dataTransfer.items[x].kind === "file") {
+          var file = ev.dataTransfer.items[x].getAsFile();
+          fr.readAsArrayBuffer(file);
+          console.log("... file[" + x + "].name = " + file.name);
+          dispatchTrackNames({ idx: i, value: file.name });
         }
       }
     } else {
@@ -38,11 +62,20 @@ const DAW = ({ trackCount }) => {
   return (
     <div className="daw">
       <div className="controls">
-        <b>Play</b>
+        <b
+          onClick={() => {
+            mix.forEach(m => {
+              m.connect(context.destination);
+              m.start(0);
+            });
+          }}
+        >
+          Play
+        </b>
         <b>Pause</b>
       </div>
       <div className="tracks">
-        {tracks.map(i => {
+        {trackNames.map((t, i) => {
           return (
             <div
               key={i}
@@ -51,12 +84,13 @@ const DAW = ({ trackCount }) => {
                 ev.preventDefault();
                 setDragOn(i);
               }}
-              onDrop={handleDrop}
+              onDrop={e => handleDrop(e, i)}
             >
-              Track {i}
+              {i} {t}
             </div>
           );
         })}
+        {JSON.stringify(trackNames)}
       </div>
     </div>
   );

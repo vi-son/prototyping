@@ -55,12 +55,12 @@ loadBuffer(clicks).then(buffer => {
   source.connect(context.destination);
   // source.start(0);
 });
-const slider = document.createElement("input");
-slider.type = "range";
-slider.min = 0;
-slider.max = 10000;
-document.body.appendChild(slider);
-slider.oninput = e => {
-  console.log(e.target.value);
-  filter.frequency.value = e.target.value;
-};
+// const slider = document.createElement("input");
+// slider.type = "range";
+// slider.min = 0;
+// slider.max = 10000;
+// document.body.appendChild(slider);
+// slider.oninput = e => {
+//   console.log(e.target.value);
+//   filter.frequency.value = e.target.value;
+// };
