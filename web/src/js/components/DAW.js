@@ -3,7 +3,7 @@ import React, { useState, useReducer } from "react";
 import "../../sass/components/DAW.sass";
 
 const DAW = ({ trackCount }) => {
-  const [context] = useState(new AudioContext());
+  const [context, setContext] = useState(new AudioContext());
   const initialTracks = new Array(trackCount).fill(0).map((_, i) => {
     return "";
   });
@@ -19,8 +19,13 @@ const DAW = ({ trackCount }) => {
     },
     initialTracks
   );
+  const [duration, setDuration] = useState(-1);
+  const [intervalled, setIntervalled] = useState(null);
+  const [startedAt, setStartedAt] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
   const [buffers, setBuffers] = useState(new Array(trackCount));
   const [dragOn, setDragOn] = useState(-1);
+  const [fileBuffers] = useState(new Array(trackCount));
   const [mix] = useState(
     new Array(trackCount).fill(0).map(i => context.createBufferSource())
   );
@@ -33,9 +38,10 @@ const DAW = ({ trackCount }) => {
       const res = fr.result;
       var source = context.createBufferSource();
       context.decodeAudioData(res).then(e => {
-        mix[i].buffer = e;
-        // console.log("Ready");
-        console.log(mix[i]);
+        fileBuffers[i] = e;
+        if (e.duration >= duration) {
+          setDuration(e.duration);
+        }
       });
     };
     if (ev.dataTransfer.items) {
@@ -44,6 +50,7 @@ const DAW = ({ trackCount }) => {
         // If dropped items aren't files, reject them
         if (ev.dataTransfer.items[x].kind === "file") {
           var file = ev.dataTransfer.items[x].getAsFile();
+          console.log(file.type);
           fr.readAsArrayBuffer(file);
           console.log("... file[" + x + "].name = " + file.name);
           dispatchTrackNames({ idx: i, value: file.name });
@@ -59,20 +66,53 @@ const DAW = ({ trackCount }) => {
     }
   };
 
+  const audioProcess = () => {
+    setCurrentTime((context.currentTime - startedAt) / duration);
+  };
+
+  const getTimecode = d => {
+    const min = Math.floor(d / 60);
+    const sec = Math.floor(d % 60);
+    return `${min}:${sec} min`;
+  };
+
   return (
     <div className="daw">
       <div className="controls">
         <b
           onClick={() => {
-            mix.forEach(m => {
+            mix.forEach((m, i) => {
+              if (m === null) {
+                m = context.createBufferSource();
+                mix[i] = m;
+              }
+              m.buffer = fileBuffers[i];
               m.connect(context.destination);
               m.start(0);
             });
+            setStartedAt(context.currentTime);
+            const intervalled = setInterval(audioProcess, 100);
+            setIntervalled(intervalled);
           }}
         >
           Play
         </b>
-        <b>Pause</b>
+        <b onClick={() => {}}>Pause</b>
+        <b
+          onClick={() => {
+            mix.forEach((m, i) => {
+              m.stop();
+              mix[i] = null;
+            });
+            clearInterval(intervalled);
+            setIntervalled(null);
+            setStartedAt(0);
+            setCurrentTime(0);
+          }}
+        >
+          Stop
+        </b>
+        <span className="duration">{getTimecode(duration)}</span>
       </div>
       <div className="tracks">
         {trackNames.map((t, i) => {
@@ -90,7 +130,14 @@ const DAW = ({ trackCount }) => {
             </div>
           );
         })}
-        {JSON.stringify(trackNames)}
+      </div>
+      <div
+        className="current-time"
+        style={{ left: `${(currentTime * 100.0).toFixed(2)}%` }}
+      >
+        <div className="time-indicator"></div>
+        <div className="line"></div>
+        {currentTime}
       </div>
     </div>
   );
