@@ -7,9 +7,9 @@ import ReactDOM from "react-dom";
 import AudioPlayer from "./components/AudioPlayer.js";
 import DAW from "./components/DAW.js";
 
-const patterns = require("../../assets/audio/patterns.202006.mp3");
-const clicks = require("../../assets/audio/patterns.202006-clicks.wav");
-const bd = require("../../assets/audio/patterns.202006-bd.wav");
+const patterns = "/audio/patterns.202006.mp3";
+const clicks = "/audio/patterns.202006-clicks.wav";
+const bd = "/audio/patterns.202006-bd.wav";
 let audioCtx = new AudioContext();
 
 const mount = document.querySelector("#mount");
