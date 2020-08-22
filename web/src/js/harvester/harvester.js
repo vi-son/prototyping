@@ -1,11 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import ReactDOM from "react-dom";
 import AudioPlayer from "./AudioPlayer.js";
 import SelectBox from "./SelectBox.js";
+import ColorInput from "./ColorInput.js";
+import FeelingsInput from "./FeelingsInput.js";
+import ShapeInput from "./ShapeInput.js";
 
 const Harvester = () => {
   const scenarioCount = 10;
-  const [completedCount, setCompletedCount] = useState(0);
+  const fadeDuration = 1000;
+  const audioPlayerRef = useRef();
+  const [backgroundColor, setBackgroundColor] = useState("hsl(0, 0%, 0%)");
+  const [isColorReactive, setIsColorReactive] = useState(false);
+  const [completedCount, setCompletedCount] = useState(9);
   const [selectedSampleIdx, setSelectedSampleIdx] = useState(0);
   const [samples] = useState([
     "dmutr_s01_pad-lo.mp3",
@@ -19,7 +26,7 @@ const Harvester = () => {
     "shine-on_s07_git-bridge-05-rev.mp3"
   ]);
 
-  const onNextScenario = e => {
+  const moveToNextScenario = e => {
     setCompletedCount(completedCount + 1);
     const nextSampleIdx = Math.round(Math.random() * (samples.length - 1));
     setSelectedSampleIdx(nextSampleIdx);
@@ -39,14 +46,33 @@ const Harvester = () => {
 
   const workflowLayout = (
     <main>
-      <AudioPlayer audiosrc={`/audio/samples/${samples[selectedSampleIdx]}`} />
-      <SelectBox></SelectBox>
-      <button onClick={onNextScenario}>Next</button>
+      <AudioPlayer
+        ref={audioPlayerRef}
+        fadeDuration={fadeDuration}
+        audiosrc={`/audio/samples/${samples[selectedSampleIdx]}`}
+        onStopped={moveToNextScenario}
+      />
+      <SelectBox
+        options={["Gefühl", "Farbe", "Form"]}
+        onIndexChange={i => {
+          i === 1 ? setIsColorReactive(true) : setIsColorReactive(false);
+        }}
+      >
+        <FeelingsInput />
+        <ColorInput onChange={s => setBackgroundColor(s)} />
+        <ShapeInput />
+      </SelectBox>
+      <button onClick={() => audioPlayerRef.current.stopAudio()}>Next</button>
     </main>
   );
 
   return (
-    <div className="harvester">
+    <div
+      className="harvester"
+      style={{
+        backgroundColor: isColorReactive ? backgroundColor : `currentColor`
+      }}
+    >
       <div className="titlebar">
         <h2>Title Bar</h2>
       </div>

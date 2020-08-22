@@ -39,9 +39,14 @@ $font-root: "../../../assets/fonts"
   display: grid
   grid-template-colums: 1fr
   grid-template-rows: 1fr 10fr 1fr
+  color: var(--color-snow)
+  transition: background 1s ease
+
+  *
+    color: var(--color-darkness)
 
   .titlebar
-    background: var(--color-dirtysnow)
+    color: var(--color-darkness)
 
   .progressbar
     display: flex
