@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import ReactDOM from "react-dom";
 import AudioPlayer from "./AudioPlayer.js";
+import SelectBox from "./SelectBox.js";
 
 const Harvester = () => {
   const scenarioCount = 10;
@@ -39,6 +40,7 @@ const Harvester = () => {
   const workflowLayout = (
     <main>
       <AudioPlayer audiosrc={`/audio/samples/${samples[selectedSampleIdx]}`} />
+      <SelectBox></SelectBox>
       <button onClick={onNextScenario}>Next</button>
     </main>
   );
