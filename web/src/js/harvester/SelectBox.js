@@ -2,9 +2,8 @@ import React, { useState } from "react";
 
 import "../../sass/components/SelectBox.sass";
 
-export default ({}) => {
+export default ({ options, children, onIndexChange }) => {
   const [selection, setSelection] = useState(0);
-  const [options] = useState(["Farbe", "Gefühl", "Form"]);
 
   return (
     <div className="select">
@@ -14,13 +13,19 @@ export default ({}) => {
             <span
               className={i === selection ? "selected" : ""}
               key={o}
-              onClick={() => setSelection(i)}
+              onClick={() => {
+                setSelection(i);
+                onIndexChange(i);
+              }}
             >
               {o}
             </span>
           );
         })}
       </div>
+      {React.Children.map(children, (child, i) =>
+        i === selection ? child : null
+      )}
     </div>
   );
 };
