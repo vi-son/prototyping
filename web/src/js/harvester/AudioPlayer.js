@@ -5,7 +5,7 @@ import "../../sass/components/AudioPlayer.sass";
 class AudioPlayer extends React.Component {
   constructor(props) {
     super(props);
-    this.audio = React.createRef();
+    this.audio = new Audio(this.props.audiosrc);
     this.timeUpdate = this.timeUpdate.bind(this);
     this.changeTime = this.changeTime.bind(this);
     this.dragTime = this.dragTime.bind(this);
@@ -15,10 +15,21 @@ class AudioPlayer extends React.Component {
     };
   }
 
+  componentWillReceiveProps() {
+    console.log("Received Props", this.props);
+    this.audio.pause();
+    this.audio = new Audio(this.props.audiosrc);
+  }
+
+  componentWillUnmount() {
+    console.log("Will unmount");
+    this.audio.pause();
+  }
+
   timeUpdate() {
     this.setState({
-      currentTime: this.audio.current.currentTime,
-      duration: this.audio.current.duration
+      currentTime: this.audio.currentTime,
+      duration: this.audio.duration
     });
   }
 
@@ -26,7 +37,7 @@ class AudioPlayer extends React.Component {
     var xOffset = e.target.getBoundingClientRect().left;
     const percent =
       (e.clientX - xOffset) / e.target.getBoundingClientRect().width;
-    this.audio.current.currentTime = this.state.duration * percent;
+    this.audio.currentTime = this.state.duration * percent;
   }
 
   dragTime(e) {}
@@ -38,11 +49,8 @@ class AudioPlayer extends React.Component {
         : 0;
     return (
       <div className="audio-player">
-        <audio preload="true" onTimeUpdate={this.timeUpdate} ref={this.audio}>
-          <source src={this.props.audiosrc} />
-        </audio>
-        <div onClick={() => this.audio.current.play()}>Play</div>
-        <div onClick={() => this.audio.current.pause()}>Pause</div>
+        <div onClick={() => this.audio.play()}>Play</div>
+        <div onClick={() => this.audio.pause()}>Pause</div>
         <div className="timeline" onClick={this.changeTime}>
           <div className="playhead" style={{ left: `${left}%` }}></div>
         </div>
@@ -50,6 +58,7 @@ class AudioPlayer extends React.Component {
         <div className="volume">
           <div className="knob"></div>
         </div>
+        {this.props.audiosrc}
       </div>
     );
   }
