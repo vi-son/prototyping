@@ -12,7 +12,7 @@ const Harvester = () => {
   const audioPlayerRef = useRef();
   const [backgroundColor, setBackgroundColor] = useState("hsl(0, 0%, 0%)");
   const [isColorReactive, setIsColorReactive] = useState(false);
-  const [completedCount, setCompletedCount] = useState(9);
+  const [completedCount, setCompletedCount] = useState(0);
   const [selectedSampleIdx, setSelectedSampleIdx] = useState(0);
   const [samples] = useState([
     "dmutr_s01_pad-lo.mp3",

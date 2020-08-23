@@ -6,53 +6,93 @@ class AudioPlayer extends React.Component {
   constructor(props) {
     super(props);
     this.audio = new Audio(this.props.audiosrc);
-    this.setupAudio();
     this.changeTime = this.changeTime.bind(this);
     this.dragTime = this.dragTime.bind(this);
+    this.setDuration = this.setDuration.bind(this);
+    this.setupAudio();
     this.state = {
       duration: 0,
       currentTime: 0,
-      volume: 1
+      volume: 0,
+      fadeInterval: null
     };
+  }
+
+  fadeInAndPlay() {
+    this.audio.play();
+    const steps = 10;
+    const step = 1.0 / steps;
+    const timeStep = this.props.fadeDuration / steps;
+    clearInterval(this.state.fadeInterval);
+    const intv = setInterval(() => {
+      if (this.state.volume >= 1.0) {
+        clearInterval(this.state.fadeInterval);
+        this.setState(state => ({ volume: 1 }));
+      } else {
+        this.setState(state => ({ volume: this.state.volume + step }));
+        this.audio.volume = Math.min(this.state.volume, 1.0);
+      }
+    }, timeStep);
+    this.setState(state => ({ fadeInterval: intv }));
+  }
+
+  fadeOutAndStop() {
+    const steps = 10;
+    const step = 1.0 / steps;
+    const timeStep = this.props.fadeDuration / steps;
+    clearInterval(this.state.fadeInterval);
+    const intv = setInterval(() => {
+      if (this.state.volume <= 0.0) {
+        clearInterval(this.state.fadeInterval);
+        this.setState(state => ({ volume: 0 }));
+        this.audio.pause();
+      } else {
+        this.setState(state => ({ volume: this.state.volume - step }));
+        this.audio.volume = Math.max(this.state.volume, 0.0);
+      }
+    }, timeStep);
+    this.setState(state => ({ fadeInterval: intv }));
   }
 
   componentWillUnmount() {
     this.audio.ontimeupdate = null;
+    this.audio.removeEventListener("canplaythrough", this.setDuration);
+    clearInterval(this.state.fadeInterval);
+  }
+
+  setDuration() {
+    this.setState({
+      duration: this.audio.duration
+    });
   }
 
   setupAudio() {
     this.audio.loop = true;
-    this.audio.addEventListener("canplaythrough", () => {
-      this.setState({
-        duration: this.audio.duration
-      });
-    });
+    this.audio.volume = 0.0;
+    this.audio.addEventListener("canplaythrough", this.setDuration);
     this.audio.ontimeupdate = this.timeUpdate.bind(this);
     this.audio.src = this.props.audiosrc;
   }
 
   stopAudio() {
-    this.audio.src = this.props.audiosrc;
-    if (this.audio.paused) {
-      this.props.onStopped();
-      return;
-    }
-    // Fade out if audio is playing
     const steps = 10;
     const step = 1.0 / steps;
     const timeStep = this.props.fadeDuration / steps;
+    clearInterval(this.state.fadeInterval);
     const intv = setInterval(() => {
       if (this.state.volume < 0.0) {
-        clearInterval(intv);
+        clearInterval(this.state.fadeInterval);
         this.audio.pause();
-        this.setState(state => ({ volume: 1 }));
+        this.setState(state => ({ volume: 0 }));
         this.audio.volume = this.state.volume;
+        this.audio.src = this.props.audiosrc;
         this.props.onStopped();
       } else {
         this.setState(state => ({ volume: this.state.volume - step }));
         this.audio.volume = Math.max(this.state.volume, 0.0);
       }
     }, timeStep);
+    this.setState(state => ({ fadeInterval: intv }));
   }
 
   timeUpdate() {
@@ -77,11 +117,13 @@ class AudioPlayer extends React.Component {
         : 0;
     return (
       <div className="audio-player">
-        <div className="btn-play" onClick={() => this.audio.play()}>
-          Play
-        </div>
-        <div className="btn-pause" onClick={() => this.audio.pause()}>
-          Pause
+        <div className="controls">
+          <div className="btn-play" onClick={() => this.fadeInAndPlay()}>
+            Play
+          </div>
+          <div className="btn-pause" onClick={() => this.fadeOutAndStop()}>
+            Pause
+          </div>
         </div>
         <div className="timeline" onClick={this.changeTime}>
           <div className="playhead" style={{ left: `${left}%` }}></div>
@@ -90,7 +132,15 @@ class AudioPlayer extends React.Component {
         <div className="volume">
           <div className="knob"></div>
         </div>
-        {this.props.audiosrc}
+        <div className="column">
+          <span>
+            <b>Sample: </b>
+            {this.props.audiosrc}
+          </span>
+          <span>
+            <b>Volume:</b> {this.state.volume}
+          </span>
+        </div>
       </div>
     );
   }
