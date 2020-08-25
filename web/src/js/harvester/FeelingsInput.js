@@ -1,9 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 import "../../sass/components/FeelingsInput.sass";
 
 export default ({}) => {
   const [feeling, setFeeling] = useState("");
+  const canvas = useRef();
 
   const feelings = [
     ["klar", "aufmerksam", "neugierig"],
@@ -19,9 +22,41 @@ export default ({}) => {
   const center = 250;
   const n = feelings.length;
 
+  useEffect(() => {
+    var scene = new THREE.Scene();
+    // const aspect = window.innerWidth / window.innerHeight;
+    const aspect = 1;
+    var camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 1000);
+    var renderer = new THREE.WebGLRenderer({
+      canvas: canvas.current,
+      alpha: true
+    });
+    // renderer.setSize(window.innerWidth, window.innerHeight);
+    var geometry = new THREE.BoxGeometry(1, 1, 1);
+    var newGeometry = new THREE.BufferGeometry();
+    var vertices = new Float32Array([]);
+    newGeometry.setAttribute(
+      "position",
+      new THREE.BufferAttribute(vertices, 3)
+    );
+    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    var cube = new THREE.Mesh(geometry, material);
+    scene.add(cube);
+    camera.position.z = 5;
+    var controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableZoom = false;
+    var animate = function() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    };
+    animate();
+  }, []);
+
   return (
     <div className="feelings-input">
-      Feelings Input
+      <h4>Feelings Input</h4>
+      <canvas width="600" height="600" ref={canvas}></canvas>
       <svg
         stroke="black"
         width={2 * center}
