@@ -14,7 +14,7 @@ const Harvester = () => {
   const [isColorReactive, setIsColorReactive] = useState(false);
   const [completedCount, setCompletedCount] = useState(0);
   const [selectedSampleIdx, setSelectedSampleIdx] = useState(0);
-  const [samples] = useState([
+  const [samples, setSamples] = useState([
     "dmutr_s01_pad-lo.mp3",
     "piano_s01_piano.mp3",
     "piano_s03_wind-pad.mp3",
@@ -25,15 +25,23 @@ const Harvester = () => {
     "shine-on_s06_git-bridge-01-triolen.mp3",
     "shine-on_s07_git-bridge-05-rev.mp3"
   ]);
+  const [seenSamples, setSeenSamples] = useState([]);
 
   const moveToNextScenario = e => {
     setCompletedCount(completedCount + 1);
     const nextSampleIdx = Math.round(Math.random() * (samples.length - 1));
     setSelectedSampleIdx(nextSampleIdx);
+    setSamples([
+      ...samples.slice(0, nextSampleIdx),
+      ...samples.slice(nextSampleIdx + 1)
+    ]);
+    setSeenSamples([...seenSamples, ...[samples[nextSampleIdx]]]);
   };
 
   const onRestartWorkflow = e => {
     setCompletedCount(0);
+    setSamples(seenSamples);
+    setSeenSamples([]);
   };
 
   const finishedLayout = (
@@ -52,6 +60,24 @@ const Harvester = () => {
         audiosrc={`/audio/samples/${samples[selectedSampleIdx]}`}
         onStopped={moveToNextScenario}
       />
+      <div className="samples">
+        <div className="pool">
+          <h4>Sample Pool</h4>
+          <ol>
+            {samples.map((s, i) => (
+              <li key={i}>{s}</li>
+            ))}
+          </ol>
+        </div>
+        <div className="seen">
+          <h4>Already Played:</h4>
+          <ol>
+            {seenSamples.map((s, i) => (
+              <li key={i}>{s}</li>
+            ))}
+          </ol>
+        </div>
+      </div>
       <SelectBox
         options={["Gefühl", "Farbe", "Form"]}
         onIndexChange={i => {
@@ -62,7 +88,12 @@ const Harvester = () => {
         <ColorInput onChange={s => setBackgroundColor(s)} />
         <ShapeInput />
       </SelectBox>
-      <button onClick={() => audioPlayerRef.current.stopAudio()}>Next</button>
+      <button
+        className="next-sample"
+        onClick={() => audioPlayerRef.current.stopAudio()}
+      >
+        Next
+      </button>
     </main>
   );
 
