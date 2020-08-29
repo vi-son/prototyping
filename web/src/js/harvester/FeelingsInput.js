@@ -1,8 +1,18 @@
 import React, { useState, useEffect, useRef } from "react";
 import * as THREE from "three";
+import { WEBGL } from "../webgl.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 import "../../sass/components/FeelingsInput.sass";
+
+// TODO: compatability check
+if (WEBGL.isWebGLAvailable()) {
+  // Initiate function or other initializations here
+  // animate();
+} else {
+  // var warning = WEBGL.getWebGLErrorMessage();
+  // document.getElementById("container").appendChild(warning);
+}
 
 export default ({}) => {
   const [feeling, setFeeling] = useState("");
@@ -81,7 +91,15 @@ export default ({}) => {
   };
 
   useEffect(() => {
+    const size = canvas.current.getBoundingClientRect();
     var scene = new THREE.Scene();
+    const root = new THREE.Object3D();
+    var material = new THREE.MeshPhongMaterial({
+      color: 0x424242,
+      shininess: 10,
+      flatShading: true,
+      side: THREE.DoubleSide
+    });
     // const width = window.innerWidth / window.innerHeight;
     const aspect = 1;
     var camera = new THREE.OrthographicCamera(-2, 2, 2, -2, 0.1, 100);
@@ -91,9 +109,10 @@ export default ({}) => {
       alpha: true
     });
     // renderer.setSize(window.innerWidth, window.innerHeight);
-    var geometry = new THREE.BoxGeometry(1, 1, 1);
-    const vert = [];
+    // var geometry = new THREE.BoxGeometry(1, 1, 1);
     feelings.map((row, i) => {
+      var geometry = new THREE.BufferGeometry();
+      const vert = [];
       let radius = 0.5;
       const a = (i / n) * 2 * Math.PI;
       const b = ((i + 1) / n) * 2 * Math.PI;
@@ -110,7 +129,15 @@ export default ({}) => {
       vert.push(0, 0.1, 0);
       vert.push(x, y, z);
       vert.push(x1, y, z1);
+      var vertices = new Float32Array(vert);
+      geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
+      geometry.computeVertexNormals();
+      geometry.computeFaceNormals();
+      const mesh = new THREE.Mesh(geometry, material.clone());
+      root.add(mesh);
       row.map((f, j) => {
+        geometry = new THREE.BufferGeometry();
+        var vert = [];
         radius = (feelings[0].length - (j + 1)) / 3.3;
         let step = 0.33 / (feelings[0].length - 1);
         const inset = 0.0; //Math.min(1.0, step * (j + 1));
@@ -127,6 +154,15 @@ export default ({}) => {
         vert.push(prevX1, prevY, prevZ1);
         vert.push(u1, v, w1);
         vert.push(u, v, w);
+        vertices = new Float32Array(vert);
+        geometry.setAttribute(
+          "position",
+          new THREE.BufferAttribute(vertices, 3)
+        );
+        geometry.computeVertexNormals();
+        geometry.computeFaceNormals();
+        const mesh = new THREE.Mesh(geometry, material.clone());
+        root.add(mesh);
         prevY = v;
         prevX = u;
         prevX1 = u1;
@@ -134,49 +170,45 @@ export default ({}) => {
         prevZ1 = w1;
       });
     });
-    var vertices = new Float32Array(vert);
-    newGeometry.setAttribute(
-      "position",
-      new THREE.BufferAttribute(vertices, 3)
-    );
-    newGeometry.computeVertexNormals();
-    newGeometry.computeFaceNormals();
-    var material = new THREE.MeshPhongMaterial({
-      color: 0x424242,
-      shininess: 10,
-      flatShading: true,
-      side: THREE.DoubleSide
-    });
-    var wireframe = new THREE.WireframeGeometry(newGeometry);
-    const lineMaterial = new THREE.LineBasicMaterial({
-      color: 0x000000,
-      linewidth: 10
-    });
-    var line = new THREE.LineSegments(wireframe, lineMaterial);
-    line.position.set(0, 1.0, 0);
-    scene.add(line);
-    var cube = new THREE.Mesh(newGeometry, material);
-    cube.position.set(0, 1.0, 0);
-    scene.add(cube);
+    scene.add(root);
     var light = new THREE.HemisphereLight(0xffffff, 0x666666, 2.75);
     light.position.set(0, 10, 0);
     scene.add(light);
-    // var directionalLight = new THREE.DirectionalLight(0xffffff, 5.0);
-    // directionalLight.position.set(1, 3, 2);
-    // directionalLight.position.sub(camera.position);
-    // var light = new THREE.AmbientLight(0x404040, 3.0); // soft white light
-    // scene.add(light);
-    // scene.add(directionalLight);
     camera.position.z = 5;
     var controls = new OrbitControls(camera, renderer.domElement);
     camera.position.set(2, 2, 2);
     controls.update();
     controls.enableZoom = false;
-    var animate = function() {
-      requestAnimationFrame(animate);
+
+    var mousePosition = new THREE.Vector2();
+    const raycaster = new THREE.Raycaster();
+    var hit = [];
+
+    var onUpdate = function() {
+      for (var i = 0, j = root.children.length; i < j; i++) {
+        root.children[i].material.color = new THREE.Color(0x64b5f6);
+      }
+      raycaster.setFromCamera(mousePosition, camera);
+      hit = raycaster.intersectObjects(root.children);
+      if (hit.length > 0) {
+        console.log(hit[0].object.id);
+        hit[0].object.material.color = new THREE.Color(0xff0000);
+      }
+    };
+
+    // Get mouse position
+    function onMouseMove(e) {
+      mousePosition.x = ((e.clientX - size.x) / size.width) * 2 - 1;
+      mousePosition.y = -((e.clientY - size.y) / size.height) * 2 + 1;
+    }
+    canvas.current.addEventListener("mousemove", onMouseMove);
+
+    var render = function() {
+      requestAnimationFrame(render);
+      onUpdate();
       renderer.render(scene, camera);
     };
-    animate();
+    render();
   }, []);
 
   return (
