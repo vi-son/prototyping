@@ -7,8 +7,10 @@ import "../../sass/components/FeelingsInput.sass";
 export default ({}) => {
   const [feeling, setFeeling] = useState("");
   const [svgPoint, setSvgPoint] = useState([0, 0]);
+  const [open, setOpen] = useState(0);
   const canvas = useRef();
   const svg = useRef();
+  const [newGeometry, setNewGeometry] = useState(new THREE.BufferGeometry());
 
   const feelings = [
     ["klar", "aufmerksam", "neugierig"],
@@ -24,33 +26,147 @@ export default ({}) => {
   const center = 250;
   const n = feelings.length;
 
+  const reactOnSlider = () => {
+    const val = open / 100.0;
+    console.log(val);
+    const vert = [];
+    feelings.map((row, i) => {
+      let radius = 0.5;
+      const a = (i / n) * 2 * Math.PI;
+      const b = ((i + 1) / n) * 2 * Math.PI;
+      const x = radius * Math.sin(a);
+      const z = radius * Math.cos(a);
+      const x1 = radius * Math.sin(b);
+      const z1 = radius * Math.cos(b);
+      const y = 0;
+      let prevX = x;
+      let prevZ = z;
+      let prevX1 = x1;
+      let prevZ1 = z1;
+      let prevY = y;
+      vert.push(0, 0.1 * (1.0 - val), 0);
+      vert.push(x, y, z);
+      vert.push(x1, y, z1);
+      row.map((f, j) => {
+        const from = (feelings[0].length - (j + 1)) / 3.3;
+        const to = radius + (j + 1) / 6;
+        radius = val * to + (1.0 - val) * from;
+        let step = 0.33 / (feelings[0].length - 1);
+        const inset = val * Math.min(1.0, step * (j + 1));
+        let o = ((i + inset) / n) * 2 * Math.PI;
+        let p = ((i + 1 - inset) / n) * 2 * Math.PI;
+        const u = radius * Math.sin(o);
+        const w = radius * Math.cos(o);
+        const u1 = radius * Math.sin(p);
+        const w1 = radius * Math.cos(p);
+        const v = -(j + 1) * 0.5 * (1.0 - val);
+        vert.push(prevX, prevY, prevZ);
+        vert.push(u, v, w);
+        vert.push(prevX1, prevY, prevZ1);
+        vert.push(prevX1, prevY, prevZ1);
+        vert.push(u1, v, w1);
+        vert.push(u, v, w);
+        prevY = v;
+        prevX = u;
+        prevX1 = u1;
+        prevZ = w;
+        prevZ1 = w1;
+      });
+    });
+    var vertices = new Float32Array(vert);
+    newGeometry.setAttribute(
+      "position",
+      new THREE.BufferAttribute(vertices, 3)
+    );
+  };
+
   useEffect(() => {
     var scene = new THREE.Scene();
     // const width = window.innerWidth / window.innerHeight;
     const aspect = 1;
     var camera = new THREE.OrthographicCamera(-2, 2, 2, -2, 0.1, 100);
     var renderer = new THREE.WebGLRenderer({
+      antialias: 1,
       canvas: canvas.current,
       alpha: true
     });
     // renderer.setSize(window.innerWidth, window.innerHeight);
     var geometry = new THREE.BoxGeometry(1, 1, 1);
-    var newGeometry = new THREE.BufferGeometry();
-    var vertices = new Float32Array([]);
+    const vert = [];
+    feelings.map((row, i) => {
+      let radius = 0.5;
+      const a = (i / n) * 2 * Math.PI;
+      const b = ((i + 1) / n) * 2 * Math.PI;
+      const x = radius * Math.sin(a);
+      const z = radius * Math.cos(a);
+      const x1 = radius * Math.sin(b);
+      const z1 = radius * Math.cos(b);
+      const y = 0;
+      let prevX = x;
+      let prevZ = z;
+      let prevX1 = x1;
+      let prevZ1 = z1;
+      let prevY = y;
+      vert.push(0, 0.1, 0);
+      vert.push(x, y, z);
+      vert.push(x1, y, z1);
+      row.map((f, j) => {
+        radius = (feelings[0].length - (j + 1)) / 3.3;
+        let step = 0.33 / (feelings[0].length - 1);
+        const inset = 0.0; //Math.min(1.0, step * (j + 1));
+        let o = ((i + inset) / n) * 2 * Math.PI;
+        let p = ((i + 1 - inset) / n) * 2 * Math.PI;
+        const u = radius * Math.sin(o);
+        const w = radius * Math.cos(o);
+        const u1 = radius * Math.sin(p);
+        const w1 = radius * Math.cos(p);
+        const v = -(j + 1) * 0.5;
+        vert.push(prevX, prevY, prevZ);
+        vert.push(u, v, w);
+        vert.push(prevX1, prevY, prevZ1);
+        vert.push(prevX1, prevY, prevZ1);
+        vert.push(u1, v, w1);
+        vert.push(u, v, w);
+        prevY = v;
+        prevX = u;
+        prevX1 = u1;
+        prevZ = w;
+        prevZ1 = w1;
+      });
+    });
+    var vertices = new Float32Array(vert);
     newGeometry.setAttribute(
       "position",
       new THREE.BufferAttribute(vertices, 3)
     );
+    newGeometry.computeVertexNormals();
+    newGeometry.computeFaceNormals();
     var material = new THREE.MeshPhongMaterial({
       color: 0x424242,
-      shininess: 50,
-      flatShading: true
+      shininess: 10,
+      flatShading: true,
+      side: THREE.DoubleSide
     });
-    var cube = new THREE.Mesh(geometry, material);
-    var directionalLight = new THREE.DirectionalLight(0xffffff, 5.0);
-    directionalLight.position.set(1, 3, 2);
-    scene.add(directionalLight);
+    var wireframe = new THREE.WireframeGeometry(newGeometry);
+    const lineMaterial = new THREE.LineBasicMaterial({
+      color: 0x000000,
+      linewidth: 10
+    });
+    var line = new THREE.LineSegments(wireframe, lineMaterial);
+    line.position.set(0, 1.0, 0);
+    scene.add(line);
+    var cube = new THREE.Mesh(newGeometry, material);
+    cube.position.set(0, 1.0, 0);
     scene.add(cube);
+    var light = new THREE.HemisphereLight(0xffffff, 0x666666, 2.75);
+    light.position.set(0, 10, 0);
+    scene.add(light);
+    // var directionalLight = new THREE.DirectionalLight(0xffffff, 5.0);
+    // directionalLight.position.set(1, 3, 2);
+    // directionalLight.position.sub(camera.position);
+    // var light = new THREE.AmbientLight(0x404040, 3.0); // soft white light
+    // scene.add(light);
+    // scene.add(directionalLight);
     camera.position.z = 5;
     var controls = new OrbitControls(camera, renderer.domElement);
     camera.position.set(2, 2, 2);
@@ -66,8 +182,19 @@ export default ({}) => {
   return (
     <div className="feelings-input">
       <h4>Feelings Input</h4>
-      <canvas width="600" height="600" ref={canvas}></canvas>
+      <input
+        type="range"
+        defaultValue="0"
+        min="0"
+        max="100"
+        onChange={e => {
+          setOpen(e.target.value);
+          reactOnSlider();
+        }}
+      />
+      <canvas width="800" height="800" ref={canvas}></canvas>
       <svg
+        style={{ display: "none" }}
         ref={svg}
         stroke="black"
         width={2 * center}

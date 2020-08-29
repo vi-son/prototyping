@@ -52,6 +52,27 @@ const Harvester = () => {
     </main>
   );
 
+  const samplePoolDebug = (
+    <div className="samples">
+      <div className="pool">
+        <h4>Sample Pool</h4>
+        <ol>
+          {samples.map((s, i) => (
+            <li key={i}>{s}</li>
+          ))}
+        </ol>
+      </div>
+      <div className="seen">
+        <h4>Already Played:</h4>
+        <ol>
+          {seenSamples.map((s, i) => (
+            <li key={i}>{s}</li>
+          ))}
+        </ol>
+      </div>
+    </div>
+  );
+
   const workflowLayout = (
     <main>
       <AudioPlayer
@@ -60,24 +81,6 @@ const Harvester = () => {
         audiosrc={`/audio/samples/${samples[selectedSampleIdx]}`}
         onStopped={moveToNextScenario}
       />
-      <div className="samples">
-        <div className="pool">
-          <h4>Sample Pool</h4>
-          <ol>
-            {samples.map((s, i) => (
-              <li key={i}>{s}</li>
-            ))}
-          </ol>
-        </div>
-        <div className="seen">
-          <h4>Already Played:</h4>
-          <ol>
-            {seenSamples.map((s, i) => (
-              <li key={i}>{s}</li>
-            ))}
-          </ol>
-        </div>
-      </div>
       <SelectBox
         options={["Gefühl", "Farbe", "Form"]}
         onIndexChange={i => {

@@ -111,6 +111,21 @@ class AudioPlayer extends React.Component {
   dragTime(e) {}
 
   render() {
+    const debug = (
+      <div className="column">
+        <span>
+          <b>Sample: </b>
+          {this.props.audiosrc}
+        </span>
+        <span>
+          <b>Volume:</b> {this.state.volume}
+        </span>
+        <span>
+          {this.state.currentTime}/{this.state.duration}
+        </span>
+      </div>
+    );
+
     const left =
       this.state.currentTime / this.state.duration
         ? (this.state.currentTime / this.state.duration) * 100
@@ -128,18 +143,8 @@ class AudioPlayer extends React.Component {
         <div className="timeline" onClick={this.changeTime}>
           <div className="playhead" style={{ left: `${left}%` }}></div>
         </div>
-        {this.state.currentTime}/{this.state.duration}
         <div className="volume">
           <div className="knob"></div>
-        </div>
-        <div className="column">
-          <span>
-            <b>Sample: </b>
-            {this.props.audiosrc}
-          </span>
-          <span>
-            <b>Volume:</b> {this.state.volume}
-          </span>
         </div>
       </div>
     );
