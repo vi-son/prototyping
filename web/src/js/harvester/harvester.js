@@ -10,6 +10,7 @@ const Harvester = () => {
   const scenarioCount = 8;
   const fadeDuration = 1000;
   const audioPlayerRef = useRef();
+  const selectBoxRef = useRef();
   const [backgroundColor, setBackgroundColor] = useState("hsl(0, 0%, 0%)");
   const [isColorReactive, setIsColorReactive] = useState(false);
   const [completedCount, setCompletedCount] = useState(0);
@@ -50,6 +51,7 @@ const Harvester = () => {
       Math.round(Math.random() * (samples.length - 2))
     );
     setSelectedSampleIdx(nextSampleIdx);
+    selectBoxRef.current.init();
   };
 
   const onRestartWorkflow = e => {
@@ -101,6 +103,7 @@ const Harvester = () => {
         onStopped={moveToNextScenario}
       />
       <SelectBox
+        ref={selectBoxRef}
         options={["Gefühl", "Farbe", "Form"]}
         onIndexChange={i => {
           i === 1 ? setIsColorReactive(true) : setIsColorReactive(false);

@@ -1,31 +1,43 @@
-import React, { useState } from "react";
+import React from "react";
 
 import "../../sass/components/SelectBox.sass";
 
-export default ({ options, children, onIndexChange }) => {
-  const [selection, setSelection] = useState(0);
+export default class SelectBox extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      selection: -1
+    };
+    this.init = this.init.bind(this);
+  }
 
-  return (
-    <div className="select">
-      <div className="options">
-        {options.map((o, i) => {
-          return (
-            <span
-              className={i === selection ? "selected" : ""}
-              key={o}
-              onClick={() => {
-                setSelection(i);
-                onIndexChange(i);
-              }}
-            >
-              {o}
-            </span>
-          );
-        })}
+  init() {
+    this.setState({ selection: -1 });
+  }
+
+  render() {
+    return (
+      <div className="select">
+        <div className="options">
+          {this.props.options.map((o, i) => {
+            return (
+              <span
+                className={i === this.state.selection ? "selected" : ""}
+                key={o}
+                onClick={() => {
+                  this.setState({ selection: i });
+                  this.props.onIndexChange(i);
+                }}
+              >
+                {o}
+              </span>
+            );
+          })}
+        </div>
+        {React.Children.map(this.props.children, (child, i) =>
+          i === this.state.selection ? child : null
+        )}
       </div>
-      {React.Children.map(children, (child, i) =>
-        i === selection ? child : null
-      )}
-    </div>
-  );
-};
+    );
+  }
+}

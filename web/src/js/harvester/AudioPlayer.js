@@ -54,10 +54,6 @@ class AudioPlayer extends React.Component {
     this.setState(state => ({ fadeInterval: intv }));
   }
 
-  componentWillUpdate() {
-    console.log(this.props.audiosrc);
-  }
-
   componentWillUnmount() {
     this.audio.ontimeupdate = null;
     this.audio.removeEventListener("canplaythrough", this.setDuration);
