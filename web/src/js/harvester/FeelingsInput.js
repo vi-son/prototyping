@@ -32,66 +32,15 @@ export default ({}) => {
     ["angewiedert", "ablehnend", "gelangweilt"],
     ["gereizg", "verärgert", "wütend"]
   ];
+  const feelingMap = new Map();
 
   const center = 250;
   const n = feelings.length;
 
-  const reactOnSlider = () => {
-    const val = open / 100.0;
-    console.log(val);
-    const vert = [];
-    feelings.map((row, i) => {
-      let radius = 0.5;
-      const a = (i / n) * 2 * Math.PI;
-      const b = ((i + 1) / n) * 2 * Math.PI;
-      const x = radius * Math.sin(a);
-      const z = radius * Math.cos(a);
-      const x1 = radius * Math.sin(b);
-      const z1 = radius * Math.cos(b);
-      const y = 0;
-      let prevX = x;
-      let prevZ = z;
-      let prevX1 = x1;
-      let prevZ1 = z1;
-      let prevY = y;
-      vert.push(0, 0.1 * (1.0 - val), 0);
-      vert.push(x, y, z);
-      vert.push(x1, y, z1);
-      row.map((f, j) => {
-        const from = (feelings[0].length - (j + 1)) / 3.3;
-        const to = radius + (j + 1) / 6;
-        radius = val * to + (1.0 - val) * from;
-        let step = 0.33 / (feelings[0].length - 1);
-        const inset = val * Math.min(1.0, step * (j + 1));
-        let o = ((i + inset) / n) * 2 * Math.PI;
-        let p = ((i + 1 - inset) / n) * 2 * Math.PI;
-        const u = radius * Math.sin(o);
-        const w = radius * Math.cos(o);
-        const u1 = radius * Math.sin(p);
-        const w1 = radius * Math.cos(p);
-        const v = -(j + 1) * 0.5 * (1.0 - val);
-        vert.push(prevX, prevY, prevZ);
-        vert.push(u, v, w);
-        vert.push(prevX1, prevY, prevZ1);
-        vert.push(prevX1, prevY, prevZ1);
-        vert.push(u1, v, w1);
-        vert.push(u, v, w);
-        prevY = v;
-        prevX = u;
-        prevX1 = u1;
-        prevZ = w;
-        prevZ1 = w1;
-      });
-    });
-    var vertices = new Float32Array(vert);
-    newGeometry.setAttribute(
-      "position",
-      new THREE.BufferAttribute(vertices, 3)
-    );
-  };
+  const reactOnSlider = () => {};
 
   useEffect(() => {
-    const size = canvas.current.getBoundingClientRect();
+    let size = canvas.current.getBoundingClientRect();
     var scene = new THREE.Scene();
     const root = new THREE.Object3D();
     var material = new THREE.MeshPhongMaterial({
@@ -100,15 +49,13 @@ export default ({}) => {
       flatShading: true,
       side: THREE.DoubleSide
     });
-    // const width = window.innerWidth / window.innerHeight;
-    const aspect = 1;
-    var camera = new THREE.OrthographicCamera(-2, 2, 2, -2, 0.1, 100);
+    const aspect = size.width / size.height;
+    var camera = new THREE.OrthographicCamera(-1, +1, +1, -1, 0.1, 100);
     var renderer = new THREE.WebGLRenderer({
       antialias: 1,
       canvas: canvas.current,
       alpha: true
     });
-    // renderer.setSize(window.innerWidth, window.innerHeight);
     // var geometry = new THREE.BoxGeometry(1, 1, 1);
     feelings.map((row, i) => {
       var geometry = new THREE.BufferGeometry();
@@ -126,7 +73,7 @@ export default ({}) => {
       let prevX1 = x1;
       let prevZ1 = z1;
       let prevY = y;
-      vert.push(0, 0.1, 0);
+      vert.push(0, 0.3, 0);
       vert.push(x, y, z);
       vert.push(x1, y, z1);
       var vertices = new Float32Array(vert);
@@ -135,10 +82,11 @@ export default ({}) => {
       geometry.computeFaceNormals();
       const mesh = new THREE.Mesh(geometry, material.clone());
       root.add(mesh);
-      row.map((f, j) => {
+      feelingMap.set(mesh.id, row[0]);
+      row.slice(1).map((f, j) => {
         geometry = new THREE.BufferGeometry();
         var vert = [];
-        radius = (feelings[0].length - (j + 1)) / 3.3;
+        radius = (feelings[0].length - (j + 2)) / 3.3;
         let step = 0.33 / (feelings[0].length - 1);
         const inset = 0.0; //Math.min(1.0, step * (j + 1));
         let o = ((i + inset) / n) * 2 * Math.PI;
@@ -163,6 +111,7 @@ export default ({}) => {
         geometry.computeFaceNormals();
         const mesh = new THREE.Mesh(geometry, material.clone());
         root.add(mesh);
+        feelingMap.set(mesh.id, f);
         prevY = v;
         prevX = u;
         prevX1 = u1;
@@ -174,9 +123,8 @@ export default ({}) => {
     var light = new THREE.HemisphereLight(0xffffff, 0x666666, 2.75);
     light.position.set(0, 10, 0);
     scene.add(light);
-    camera.position.z = 5;
     var controls = new OrbitControls(camera, renderer.domElement);
-    camera.position.set(2, 2, 2);
+    camera.position.set(1, 1, 1);
     controls.update();
     controls.enableZoom = false;
 
@@ -186,13 +134,14 @@ export default ({}) => {
 
     var onUpdate = function() {
       for (var i = 0, j = root.children.length; i < j; i++) {
-        root.children[i].material.color = new THREE.Color(0x64b5f6);
+        root.children[i].material.color = new THREE.Color(0x666666);
       }
       raycaster.setFromCamera(mousePosition, camera);
       hit = raycaster.intersectObjects(root.children);
       if (hit.length > 0) {
-        console.log(hit[0].object.id);
-        hit[0].object.material.color = new THREE.Color(0xff0000);
+        const id = hit[0].object.id;
+        setFeeling(feelingMap.get(id));
+        hit[0].object.material.color = new THREE.Color(0x000000);
       }
     };
 
@@ -202,6 +151,14 @@ export default ({}) => {
       mousePosition.y = -((e.clientY - size.y) / size.height) * 2 + 1;
     }
     canvas.current.addEventListener("mousemove", onMouseMove);
+
+    window.addEventListener("resize", onWindowResize, false);
+
+    function onWindowResize() {
+      size = canvas.current.getBoundingClientRect();
+      camera.updateProjectionMatrix();
+      renderer.setSize(size.width, size.height);
+    }
 
     var render = function() {
       requestAnimationFrame(render);
@@ -224,7 +181,10 @@ export default ({}) => {
           reactOnSlider();
         }}
       />
-      <canvas width="800" height="800" ref={canvas}></canvas>
+      <div className="canvas-wrapper">
+        <h4 className="feeling-name">Gefühl: {feeling}</h4>
+        <canvas width="600" height="600" ref={canvas}></canvas>
+      </div>
       <svg
         style={{ display: "none" }}
         ref={svg}
@@ -294,7 +254,6 @@ export default ({}) => {
           );
         })}
       </svg>
-      <h4>{feeling}</h4>
     </div>
   );
 };
