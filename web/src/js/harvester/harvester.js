@@ -11,7 +11,7 @@ const Harvester = () => {
   const fadeDuration = 1000;
   const audioPlayerRef = useRef();
   const selectBoxRef = useRef();
-  const [backgroundColor, setBackgroundColor] = useState("hsl(0, 0%, 0%)");
+  const [backgroundColor, setBackgroundColor] = useState("rgb(0, 0, 0)");
   const [isColorReactive, setIsColorReactive] = useState(false);
   const [completedCount, setCompletedCount] = useState(0);
   const [samples, setSamples] = useState([
