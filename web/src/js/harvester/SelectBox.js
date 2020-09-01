@@ -26,7 +26,7 @@ export default class SelectBox extends React.Component {
                 key={o}
                 onClick={() => {
                   this.setState({ selection: i });
-                  this.props.onIndexChange(i);
+                  this.props.onIndexChange(i, this.props.options[i]);
                 }}
               >
                 {o}

@@ -7,11 +7,11 @@ import FeelingsInput from "./FeelingsInput.js";
 import ShapeInput from "./ShapeInput.js";
 
 const Harvester = () => {
-  const scenarioCount = 8;
+  const scenarioCount = 10;
   const fadeDuration = 1000;
   const audioPlayerRef = useRef();
   const selectBoxRef = useRef();
-  const [backgroundColor, setBackgroundColor] = useState("rgb(0, 0, 0)");
+  const [backgroundColor, setBackgroundColor] = useState("var(--color-snow)");
   const [isColorReactive, setIsColorReactive] = useState(false);
   const [completedCount, setCompletedCount] = useState(0);
   const [samples, setSamples] = useState([
@@ -38,6 +38,12 @@ const Harvester = () => {
     Math.round(Math.random() * (samples.length - 1))
   );
   const [seenSamples, setSeenSamples] = useState([]);
+  const [currentMapping, setCurrentMapping] = useState({
+    audiosample: samples[selectedSampleIdx],
+    type: "none",
+    mapping: {}
+  });
+  const [mappings, setMappings] = useState([]);
 
   const moveToNextScenario = e => {
     setCompletedCount(completedCount + 1);
@@ -51,6 +57,7 @@ const Harvester = () => {
       Math.round(Math.random() * (samples.length - 2))
     );
     setSelectedSampleIdx(nextSampleIdx);
+    setMappings([...mappings, ...[currentMapping]]);
     selectBoxRef.current.init();
   };
 
@@ -59,6 +66,8 @@ const Harvester = () => {
     setSamples(seenSamples);
     setSeenSamples([]);
   };
+
+  const updateMappings = () => {};
 
   const finishedLayout = (
     <main>
@@ -104,13 +113,23 @@ const Harvester = () => {
       />
       <SelectBox
         ref={selectBoxRef}
-        options={["Gefühl", "Farbe", "Form"]}
-        onIndexChange={i => {
+        options={["feeling", "color", "shape"]}
+        onIndexChange={(i, name) => {
           i === 1 ? setIsColorReactive(true) : setIsColorReactive(false);
+          setCurrentMapping(Object.assign({}, currentMapping, { type: name }));
         }}
       >
         <FeelingsInput />
-        <ColorInput onChange={s => setBackgroundColor(s)} />
+        <ColorInput
+          onChange={(s, r, g, b) => {
+            setBackgroundColor(s);
+          }}
+          onClick={(r, g, b) => {
+            setCurrentMapping(
+              Object.assign({}, currentMapping, { mapping: [r, g, b] })
+            );
+          }}
+        />
         <ShapeInput />
       </SelectBox>
       <button
@@ -147,6 +166,26 @@ const Harvester = () => {
             style={{ width: `${(completedCount / scenarioCount) * 100}vw` }}
           ></div>
         </div>
+      </div>
+      <div className="mappings">
+        {mappings.map((m, i) => {
+          return (
+            <small className="mapping" key={i}>
+              <span>
+                <b>sample: </b>
+                {m.audiosample}
+              </span>
+              <span>
+                <b>type: </b>
+                {m.type}
+              </span>
+              <span>
+                <b>mapping: </b>
+                {JSON.stringify(m.mapping)}
+              </span>
+            </small>
+          );
+        })}
       </div>
     </div>
   );

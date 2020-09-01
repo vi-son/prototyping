@@ -5,22 +5,20 @@ import glsl from "glslify";
 
 import "../../sass/components/ColorInput.sass";
 
-export default ({ onChange }) => {
+export default ({ onChange, onClick }) => {
   const canvasRef = useRef();
   const [hue, setHue] = useState(128);
   const [saturation, setSaturation] = useState(60);
   const [brightness, setBrightness] = useState(97);
-  const [r, setR] = useState(0);
-  const [g, setG] = useState(0);
-  const [b, setB] = useState(0);
+  const [r, setR] = useState(250);
+  const [g, setG] = useState(250);
+  const [b, setB] = useState(250);
 
-  const reactOnChange = () => {
-    // onChange(`hsl(${hue}, ${saturation}%, ${brightness}%)`);
+  const handleClick = () => {
+    onClick(r, g, b);
   };
 
   useEffect(() => {
-    // onChange(`hsl(${hue}, ${saturation}%, ${brightness}%)`);
-
     const size = canvasRef.current.getBoundingClientRect();
     // Scene
     const scene = new THREE.Scene();
@@ -49,12 +47,28 @@ export default ({ onChange }) => {
     const cube = new THREE.Mesh(geometry, material);
     scene.add(cube);
 
-    var sphereGeometry = new THREE.SphereBufferGeometry(0.05, 32, 32);
+    var sphereGeometry = new THREE.SphereBufferGeometry(0.03, 32, 32);
     var sphereMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
     sphereMaterial.depthTest = false;
     var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-    sphere.position.set(1.5, 0, 0);
+    sphere.position.set(0, 0, 0);
     scene.add(sphere);
+
+    const radius = 0.03;
+    const points = new Array(30).fill(0).map((_, i) => {
+      return new THREE.Vector3(
+        radius * Math.sin((i / 29) * Math.PI * 2.0),
+        radius * Math.cos((i / 29) * Math.PI * 2.0),
+        0
+      );
+    });
+    var cursorGeometry = new THREE.BufferGeometry().setFromPoints(points);
+    var cursorMaterial = new THREE.LineBasicMaterial({
+      color: 0x000000,
+      depthTest: false
+    });
+    var cursor = new THREE.Line(cursorGeometry, cursorMaterial);
+    scene.add(cursor);
 
     // Camera
     const camera = new THREE.OrthographicCamera(
@@ -65,12 +79,6 @@ export default ({ onChange }) => {
       0.1,
       100
     );
-    // var camera = new THREE.PerspectiveCamera(
-    //   45,
-    //   size.width / size.height,
-    //   1,
-    //   1000
-    // );
     var controls = new OrbitControls(camera, renderer.domElement);
     camera.position.set(1, 1, 1);
     controls.update();
@@ -81,25 +89,47 @@ export default ({ onChange }) => {
     var mousePosition = new THREE.Vector2();
     const raycaster = new THREE.Raycaster();
     var hit = [];
+    let mouseDown = false;
 
     function onMouseMove(e) {
       mousePosition.x = ((e.clientX - size.x) / size.width) * 2 - 1;
       mousePosition.y = -((e.clientY - size.y) / size.height) * 2 + 1;
+      if (e.buttons !== 0) mouseDown = true;
+      else mouseDown = false;
     }
-    canvasRef.current.addEventListener("mousemove", onMouseMove);
+    canvasRef.current.addEventListener("mousemove", onMouseMove, false);
+    let clientX, clientY;
+    function onMouseDown(e) {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+    canvasRef.current.addEventListener("mousedown", onMouseDown, false);
+    function onMouseUp(e) {
+      var x = e.clientX;
+      var y = e.clientY;
+      // If the mouse moved since the mousedown then don't consider this a selection
+      if (x != clientX || y != clientY) return;
+      else {
+        if (hit.length > 0) {
+          cursor.position.set(hit[0].point.x, hit[0].point.y, hit[0].point.z);
+          const red = Math.round((hit[0].point.x + 0.5) * 255);
+          const green = Math.round((hit[0].point.y + 0.5) * 255);
+          const blue = Math.round((hit[0].point.z + 0.5) * 255);
+          setR(red);
+          setG(green);
+          setB(blue);
+          onChange(`rgb(${red}, ${green}, ${blue})`);
+        }
+      }
+    }
+    canvasRef.current.addEventListener("mouseup", onMouseUp);
 
     function onUpdate() {
       raycaster.setFromCamera(mousePosition, camera);
       hit = raycaster.intersectObject(cube);
+      cursor.lookAt(camera.position);
       if (hit.length > 0) {
         sphere.position.set(hit[0].point.x, hit[0].point.y, hit[0].point.z);
-        const red = hit[0].point.x + 0.5;
-        const green = hit[0].point.y + 0.5;
-        const blue = hit[0].point.z + 0.5;
-        setR(Math.round(red * 255));
-        setG(Math.round(green * 255));
-        setB(Math.round(blue * 255));
-        onChange(`rgb(${red * 255}, ${green * 255}, ${blue * 255})`);
       }
     }
 
@@ -165,8 +195,16 @@ export default ({ onChange }) => {
       {/*     /> */}
       {/*   </div> */}
       {/* </div> */}
+      <h4>
+        {r} {g} {b}
+      </h4>
       <div className="canvas-wrapper">
-        <canvas width="600" height="600" ref={canvasRef}></canvas>
+        <canvas
+          width="600"
+          height="600"
+          ref={canvasRef}
+          onClick={handleClick}
+        ></canvas>
       </div>
     </div>
   );
