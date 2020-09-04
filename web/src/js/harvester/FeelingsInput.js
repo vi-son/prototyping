@@ -171,16 +171,16 @@ export default ({}) => {
   return (
     <div className="feelings-input">
       <h4>Feelings Input</h4>
-      <input
-        type="range"
-        defaultValue="0"
-        min="0"
-        max="100"
-        onChange={e => {
-          setOpen(e.target.value);
-          reactOnSlider();
-        }}
-      />
+      {/* <input */}
+      {/*   type="range" */}
+      {/*   defaultValue="0" */}
+      {/*   min="0" */}
+      {/*   max="100" */}
+      {/*   onChange={e => { */}
+      {/*     setOpen(e.target.value); */}
+      {/*     reactOnSlider(); */}
+      {/*   }} */}
+      {/* /> */}
       <div className="canvas-wrapper">
         <h4 className="feeling-name">Gefühl: {feeling}</h4>
         <canvas width="600" height="600" ref={canvas}></canvas>
