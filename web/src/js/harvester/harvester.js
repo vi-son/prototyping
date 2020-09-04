@@ -5,8 +5,15 @@ import SelectBox from "./SelectBox.js";
 import ColorInput from "./ColorInput.js";
 import FeelingsInput from "./FeelingsInput.js";
 import ShapeInput from "./ShapeInput.js";
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Link,
+  useHistory
+} from "react-router-dom";
 
-const Harvester = () => {
+const RealFlow = () => {
   const scenarioCount = 10;
   const fadeDuration = 1000;
   const audioPlayerRef = useRef();
@@ -69,13 +76,7 @@ const Harvester = () => {
 
   const updateMappings = () => {};
 
-  const finishedLayout = (
-    <main>
-      <span className="emoji">&#127881;</span>
-      <h1>Congratulations</h1>
-      <button onClick={onRestartWorkflow}>Another round</button>
-    </main>
-  );
+  const finishedLayout = <main></main>;
 
   const samplePoolDebug = (
     <div className="samples">
@@ -141,6 +142,29 @@ const Harvester = () => {
     </main>
   );
 
+  const mappingDebug = (
+    <div className="mappings">
+      {mappings.map((m, i) => {
+        return (
+          <small className="mapping" key={i}>
+            <span>
+              <b>sample: </b>
+              {m.audiosample}
+            </span>
+            <span>
+              <b>type: </b>
+              {m.type}
+            </span>
+            <span>
+              <b>mapping: </b>
+              {JSON.stringify(m.mapping)}
+            </span>
+          </small>
+        );
+      })}
+    </div>
+  );
+
   return (
     <div
       className="harvester"
@@ -148,10 +172,6 @@ const Harvester = () => {
         backgroundColor: isColorReactive ? backgroundColor : `currentColor`
       }}
     >
-      <div className="titlebar">
-        <h2>harvester 2.0</h2>
-        {/* {samplePoolDebug} */}
-      </div>
       {completedCount === scenarioCount ? finishedLayout : workflowLayout}
       <div className="progressbar">
         <div
@@ -167,27 +187,71 @@ const Harvester = () => {
           ></div>
         </div>
       </div>
-      <div className="mappings">
-        {mappings.map((m, i) => {
-          return (
-            <small className="mapping" key={i}>
-              <span>
-                <b>sample: </b>
-                {m.audiosample}
-              </span>
-              <span>
-                <b>type: </b>
-                {m.type}
-              </span>
-              <span>
-                <b>mapping: </b>
-                {JSON.stringify(m.mapping)}
-              </span>
-            </small>
-          );
-        })}
-      </div>
     </div>
+  );
+};
+
+function Layout({ children }) {
+  return (
+    <div className="harvester">
+      <div className="titlebar">
+        <h5>harvester 2.0</h5>
+      </div>
+      <main>{children}</main>
+    </div>
+  );
+}
+
+function Start() {
+  return (
+    <Layout>
+      <h2>Home</h2>
+      <Link to="/harvester.html/flow">Start</Link>
+    </Layout>
+  );
+}
+
+function Flow() {
+  return (
+    <Layout>
+      <h2>Flow</h2>
+      <Link to="/harvester.html/result">Finish</Link>
+    </Layout>
+  );
+}
+
+function Finish() {
+  const history = useHistory();
+  return (
+    <Layout>
+      <h2>Finish</h2>
+
+      <span className="emoji">&#127881;</span>
+      <h1>Congratulations</h1>
+      <button onClick={() => history.push("/harvester.html/flow")}>
+        Another round
+      </button>
+    </Layout>
+  );
+}
+
+const Harvester = () => {
+  return (
+    <Router>
+      <div>
+        <Switch>
+          <Route exact path="/harvester.html">
+            <Start />
+          </Route>
+          <Route path="/harvester.html/flow">
+            <Flow />
+          </Route>
+          <Route path="/harvester.html/result">
+            <Finish />
+          </Route>
+        </Switch>
+      </div>
+    </Router>
   );
 };
 
