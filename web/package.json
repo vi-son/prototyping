@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "npx parcel src/html/index.html",
-    "build": "npx parcel build src/html/index.html --out-dir public/"
+    "dev": "npx parcel src/overview/index.html",
+    "build": "npx parcel build src/html/index.html --out-dir build/"
   },
   "keywords": [],
   "author": "",

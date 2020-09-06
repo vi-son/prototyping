@@ -1,0 +1,156 @@
+$font-root: "../../../assets/fonts"
+
+/* 1. Settings - variables, config-switches
+@import ../../shared/sass/rouge/1-settings/_colors.sass
+@import ../../shared/sass/rouge/1-settings/_fonts.sass
+@import ../../shared/sass/rouge/1-settings/_variables.sass
+@import ../../shared/sass/rouge/1-settings/_breakpoints.sass
+@import ../../shared/sass/rouge/1-settings/_typograhpy.sass
+
+/*** 2. Tools - mixins and functions
+@import ../../shared/sass/rouge/2-tools/_responsive-font-size.sass
+@import ../../shared/sass/rouge/2-tools/_media-queries.sass
+
+/* 3. Generic - ground-zero styling (normalize, reset)
+@import ../../shared/sass/rouge/3-generic/_reset.sass
+
+/* 4. Base - unclassed HTML element styles
+@import ../../shared/sass/rouge/4-base/_button.sass
+@import ../../shared/sass/rouge/4-base/_document.sass
+@import ../../shared/sass/rouge/4-base/_headings.sass
+@import ../../shared/sass/rouge/4-base/_images.sass
+@import ../../shared/sass/rouge/4-base/_input.range.sass
+@import ../../shared/sass/rouge/4-base/_input.text.sass
+@import ../../shared/sass/rouge/4-base/_input.text.sass
+@import ../../shared/sass/rouge/4-base/_links.sass
+@import ../../shared/sass/rouge/4-base/_text.sass
+
+/* 5. Objects - cosmetic-free design patterns
+@import ../../shared/sass/rouge/5-objects/_button.send.sass
+
+/*** ----------- LOCAL STYLES --------------------------------------------------
+.emoji
+  font-size: 5vw
+
+.harvester
+  width: 100vw
+  height: 100vh
+  display: grid
+  grid-template-colums: 1fr
+  grid-template-rows: 1fr 10fr 1fr
+  color: var(--color-snow)
+  transition: background 2s ease
+
+  main
+    padding-bottom: 100px
+    display: flex
+
+  *
+    color: var(--color-darkness)
+
+  .flow-button
+    background: var(--color-darkness)
+    padding: 30px 40px
+    color: var(--color-snow)
+    text-transform: lowercase
+    position: fixed
+    bottom: 5vh
+    right: 5vw
+    &:hover
+      background: var(--color-curacao)
+
+  .samples
+    display: flex
+
+  .titlebar
+    color: var(--color-darkness)
+    padding: 50px
+    .link
+      text-align: left
+
+  .progressbar
+    display: flex
+    position: fixed
+    bottom: 0
+    flex-direction: column
+    justify-content: space-between
+    .completed-text
+      font-weight: 300
+      display: flex
+      padding: 10px
+      justify-content: flex-end
+      transition: width 500ms ease
+      .divider
+        color: var(--color-curacao)
+        margin: 0 3px
+        font-weight: bold
+    .bar
+      height: 30px
+      width: 100vw
+      background: var(--color-dirtysnow)
+      position: relative
+      .completed
+        position: absolute
+        width: 0
+        height: 30px
+        background: var(--color-darkness)
+        transition: width 500ms ease
+
+.next-sample
+  position: fixed
+  right: 5vw
+  bottom: 5vw
+  background: var(--color-curacao)
+  color: var(--color-snow)
+  transition: background 200ms ease
+
+canvas:focus
+  outline: none
+
+.mappings
+  position: fixed
+  right: 0
+  top: 30px
+  background: black
+  color: white
+  padding: 20px
+  font-size: 11px
+  .mapping
+    display: flex
+    flex-direction: column
+    border-top: 1px solid rgba(255, 255, 255, 0.2)
+    margin-top: 10px
+    padding-top: 10px
+  span, b, small
+    color: white
+
+
+.two-columns
+  display: grid !important
+  grid-template-columns: 4vw 1fr 60px 1fr 4vw
+
+  .left
+    grid-column: 2
+    display: flex
+    align-items: center
+    justify-content: center
+    object-fit: contain
+    img
+      margin: 0 auto
+  .right
+    grid-column: 4
+    h2
+      margin-bottom: 40px
+
+.center-column
+  display: flex
+  flex-direction: column
+  justify-content: center
+  align-items: center
+  flex-grow: 1
+
+.token-heading
+  margin-top: 40px
+
+.finish-canvas-wrapper
+  flex-grow: 1

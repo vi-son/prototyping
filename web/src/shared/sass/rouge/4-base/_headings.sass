@@ -1,0 +1,33 @@
+h1, h2, h3, h4, h5
+  font-family: $font-headings
+  text-transform: lowercase
+  letter-spacing: 0.05rem
+  margin: 0
+  padding: 0
+  color: var(--color-darkness)
+
+h1
+  font-size: 5.625rem
+  +until($tablets)
+    font-size: 3.625rem
+  color: var(--color-peacock)
+
+h2
+  font-size: 3.9375rem
+  +until($tablets)
+    font-size: 2.9375rem
+  color: var(--color-peacock)
+
+h3
+  font-size: 2.8125rem
+  +until($tablets)
+    font-size: 1.625rem
+  color: var(--color-peacock)
+
+h4
+  font-size: 1.9375rem
+  color: var(--color-peacock)
+
+h5
+  font-size: 1.375rem
+  color: var(--color-peacock)
