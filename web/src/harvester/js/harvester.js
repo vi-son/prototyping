@@ -12,6 +12,8 @@ import Flow from "./Flow.js";
 import Layout from "./Layout.js";
 import Start from "./Start.js";
 import Finish from "./Finish.js";
+import AudioPlayer from "./AudioPlayer.js";
+import ShapeInput from "./ShapeInput.js";
 
 const Harvester = () => {
   return (

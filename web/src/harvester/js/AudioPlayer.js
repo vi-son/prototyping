@@ -11,10 +11,12 @@ class AudioPlayer extends React.Component {
     this.setDuration = this.setDuration.bind(this);
     this.setupAudio();
     this.state = {
+      playing: false,
       duration: 0,
       currentTime: 0,
       volume: 0,
-      fadeInterval: null
+      fadeInterval: null,
+      slider: 0
     };
   }
 
@@ -126,27 +128,77 @@ class AudioPlayer extends React.Component {
       </div>
     );
 
+    const cx = 0;
+    const cy = 0;
+    const r = 50;
+    const range = this.state.currentTime / this.state.duration;
+    const startX = cx + r;
+    const startY = cy;
+    const endX = cx + r + r * Math.sin(range * Math.PI * 2.0);
+    const endY = cy + r - r * Math.cos(range * Math.PI * 2.0);
+    const way = range >= 0.5 ? 1 : 0;
+    const sweep = range > 0 || range === 1.0 ? 1 : 0;
+
     const left =
       this.state.currentTime / this.state.duration
         ? (this.state.currentTime / this.state.duration) * 100
         : 0;
     return (
       <div className="audio-player">
-        <div className="controls">
-          <div className="btn-play" onClick={() => this.fadeInAndPlay()}>
-            Play
-          </div>
-          <div className="btn-pause" onClick={() => this.fadeOutAndStop()}>
-            Pause
-          </div>
-        </div>
+        {/* <div className="controls"> */}
+        {/*   <div className="btn-play" onClick={() => this.fadeInAndPlay()}> */}
+        {/*     Play */}
+        {/*   </div> */}
+        {/*   <div className="btn-pause" onClick={() => this.fadeOutAndStop()}> */}
+        {/*     Pause */}
+        {/*   </div> */}
+        {/* </div> */}
         <div className="timeline" onClick={this.changeTime}>
           <div className="playhead" style={{ left: `${left}%` }}></div>
         </div>
         <div className="volume">
           <div className="knob"></div>
         </div>
+
+        <svg width={200} height={200}>
+          <g
+            stroke="var(--color-darkness)"
+            fill="none"
+            strokeWidth="10"
+            strokeLinecap="round"
+            transform="translate(50, 50)"
+          >
+            <circle
+              cx={cx + r}
+              cy={cy + r}
+              r={r}
+              fill="none"
+              strokeWidth="2"
+              stroke="var(--color-dirtysnow)"
+            />
+            <path
+              d={`M ${startX} ${startY} A ${r} ${r} 0 ${way} ${sweep} ${endX} ${endY}`}
+            />
+            <polygon
+              transform={`translate(${cx + r / 2},${cy + r / 2})`}
+              points={
+                this.state.playing
+                  ? "12.5,12.5 37.5,12.5 37.5,37.5 12.5,37.5"
+                  : "14.5,5 45,25 45,25 14.5,45"
+              }
+              fill="var(--color-curacao)"
+              stroke="none"
+              onClick={e => {
+                this.setState({ playing: !this.state.playing });
+                this.state.playing
+                  ? this.fadeOutAndStop()
+                  : this.fadeInAndPlay();
+              }}
+            ></polygon>
+          </g>
+        </svg>
         {/* {debug} */}
+        {this.state.playing ? "Pause" : "Playing"}
       </div>
     );
   }
