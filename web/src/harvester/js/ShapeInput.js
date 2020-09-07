@@ -4,6 +4,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 export default ({}) => {
   const canvasRef = useRef();
+  const [selectedShape, setSelectedShape] = useState("");
 
   useEffect(() => {
     // onChange(`hsl(${hue}, ${saturation}%, ${brightness}%)`);
@@ -22,17 +23,47 @@ export default ({}) => {
     light.position.set(0, 10, 0);
     scene.add(light);
     // Geometry
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
-    const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
-    const cube = new THREE.Mesh(geometry, material);
-    // scene.add(cube);
+    var material = new THREE.MeshLambertMaterial({ color: 0x333333 });
 
-    var sphereGeometry = new THREE.SphereBufferGeometry(0.05, 32, 32);
-    var sphereMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
-    sphereMaterial.depthTest = false;
-    var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-    sphere.position.set(1.5, 0, 0);
-    scene.add(sphere);
+    // Cube
+    const cubeGeometry = new THREE.BoxGeometry(0.4, 0.4, 0.4);
+    const cube = new THREE.Mesh(cubeGeometry, material.clone());
+    cube.name = "Cube";
+    // Sphere
+    const sphereGeometry = new THREE.SphereBufferGeometry(0.26, 32, 32);
+    const sphere = new THREE.Mesh(sphereGeometry, material.clone());
+    sphere.position.set(-0.75, 0, 0);
+    sphere.name = "Sphere";
+    // Cone
+    const coneGeometry = new THREE.ConeGeometry(0.2, 0.5, 30);
+    const cone = new THREE.Mesh(coneGeometry, material.clone());
+    cone.position.set(0.75, 0, 0);
+    cone.name = "Cone";
+    // Cylinder
+    var cylinderGeometry = new THREE.CylinderGeometry(0.2, 0.2, 0.5, 32);
+    var cylinder = new THREE.Mesh(cylinderGeometry, material.clone());
+    cylinder.position.set(-0.75, 0.75, 0);
+    cylinder.name = "Cylinder";
+    // Icosahedron
+    var icosahedronGeometry = new THREE.IcosahedronGeometry(0.25, 0);
+    var icosahedron = new THREE.Mesh(icosahedronGeometry, material.clone());
+    icosahedron.position.set(0.0, 0.75, 0);
+    icosahedron.name = "Icosahedron";
+    // Octahedron
+    var octahedronGeometry = new THREE.OctahedronGeometry(0.25, 0);
+    var octahedron = new THREE.Mesh(octahedronGeometry, material.clone());
+    octahedron.position.set(0.75, 0.75, 0);
+    octahedron.name = "Octahedron";
+
+    const group = new THREE.Group();
+    group.add(sphere);
+    group.add(cube);
+    group.add(cone);
+    group.add(cylinder);
+    group.add(icosahedron);
+    group.add(octahedron);
+
+    scene.add(group);
 
     // Camera
     const camera = new THREE.OrthographicCamera(
@@ -44,7 +75,7 @@ export default ({}) => {
       100
     );
     var controls = new OrbitControls(camera, renderer.domElement);
-    camera.position.set(1, 1, 1);
+    camera.position.set(0, 3, 5);
     controls.update();
     controls.enableZoom = false;
     controls.enableDamping = true;
@@ -61,16 +92,23 @@ export default ({}) => {
     canvasRef.current.addEventListener("mousemove", onMouseMove);
 
     function onUpdate() {
-      sphere.position.set(mousePosition.x, mousePosition.y, 0);
       raycaster.setFromCamera(mousePosition, camera);
-      hit = raycaster.intersectObject(cube);
+      hit = raycaster.intersectObjects(group.children);
       if (hit.length > 0) {
-        // sphere.position.set(hit[0].point.x, hit[0].point.y, hit[0].point.z);
+        hit[0].object.material.color.set(0x2b13ff);
+        setSelectedShape(hit[0].object.name);
       }
     }
 
+    const clock = new THREE.Clock(true);
+    let t;
     var render = function() {
       requestAnimationFrame(render);
+      t = clock.getElapsedTime();
+      for (var i = 0; i < group.children.length; i++) {
+        group.children[i].material.color.set(0x333333);
+        group.children[i].rotation.y = t;
+      }
       onUpdate();
       renderer.render(scene, camera);
     };
@@ -79,7 +117,7 @@ export default ({}) => {
 
   return (
     <div className="shape-input">
-      Shape Input
+      <h3>{selectedShape}</h3>
       <div className="canvas-wrapper">
         <canvas width="600" height="600" ref={canvasRef}></canvas>
       </div>
