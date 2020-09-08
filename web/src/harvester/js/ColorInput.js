@@ -5,7 +5,7 @@ import glsl from "glslify";
 
 import "../sass/ColorInput.sass";
 
-export default ({ onChange, onClick }) => {
+export default ({ onChange, onSelect }) => {
   const canvasRef = useRef();
   const [hue, setHue] = useState(128);
   const [saturation, setSaturation] = useState(60);
@@ -15,7 +15,7 @@ export default ({ onChange, onClick }) => {
   const [b, setB] = useState(250);
 
   const handleClick = () => {
-    onClick(r, g, b);
+    onSelect(r, g, b);
   };
 
   useEffect(() => {

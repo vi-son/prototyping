@@ -14,7 +14,7 @@ if (WEBGL.isWebGLAvailable()) {
   // document.getElementById("container").appendChild(warning);
 }
 
-export default ({}) => {
+export default ({ onSelect }) => {
   const [feeling, setFeeling] = useState("");
   const [svgPoint, setSvgPoint] = useState([0, 0]);
   const [open, setOpen] = useState(0);
@@ -50,7 +50,14 @@ export default ({}) => {
       side: THREE.DoubleSide
     });
     const aspect = size.width / size.height;
-    var camera = new THREE.OrthographicCamera(-1, +1, +1, -1, 0.1, 100);
+    var camera = new THREE.OrthographicCamera(
+      size.width / -400,
+      size.width / +400,
+      size.width / +400,
+      size.width / -400,
+      0.1,
+      100
+    );
     var renderer = new THREE.WebGLRenderer({
       antialias: 1,
       canvas: canvas.current,
@@ -128,13 +135,30 @@ export default ({}) => {
     controls.update();
     controls.enableZoom = false;
 
+    // Lines
+    var lineMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
+    var points = [];
+    points.push(new THREE.Vector3(0, 0, 0));
+    points.push(new THREE.Vector3(-0.5, 0.5, 0));
+    var lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+    var line = new THREE.Line(lineGeometry, lineMaterial);
+    scene.add(line);
+
     var mousePosition = new THREE.Vector2();
     const raycaster = new THREE.Raycaster();
     var hit = [];
+    var selectedId = -1;
 
     var onUpdate = function() {
+      var to = new THREE.Vector3(-0.5, -0.5, 0).project(camera);
+      points[1] = to;
+      lineGeometry.setFromPoints(points);
       for (var i = 0, j = root.children.length; i < j; i++) {
-        root.children[i].material.color = new THREE.Color(0x666666);
+        if (root.children[i].id === selectedId) {
+          root.children[i].material.color.set(0x666666);
+          continue;
+        }
+        root.children[i].material.color.set(0x333333);
       }
       raycaster.setFromCamera(mousePosition, camera);
       hit = raycaster.intersectObjects(root.children);
@@ -151,6 +175,30 @@ export default ({}) => {
       mousePosition.y = -((e.clientY - size.y) / size.height) * 2 + 1;
     }
     canvas.current.addEventListener("mousemove", onMouseMove);
+
+    let clientX, clientY;
+    function onMouseDown(e) {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+    canvas.current.addEventListener("mousedown", onMouseDown, false);
+
+    function onMouseUp(e) {
+      var x = e.clientX;
+      var y = e.clientY;
+      // If the mouse moved since the mousedown then don't consider this a selection
+      if (x != clientX || y != clientY) return;
+      else {
+        if (hit.length > 0) {
+          points[0] = hit[0].point;
+          const id = hit[0].object.id;
+          setFeeling(feelingMap.get(id));
+          onSelect(feelingMap.get(id));
+          selectedId = id;
+        }
+      }
+    }
+    canvas.current.addEventListener("mouseup", onMouseUp);
 
     window.addEventListener("resize", onWindowResize, false);
 

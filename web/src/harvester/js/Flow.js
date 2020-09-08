@@ -55,7 +55,7 @@ const RealFlow = () => {
   const [currentMapping, setCurrentMapping] = useState({
     audiosample: samples[selectedSampleIdx],
     type: "none",
-    mapping: {}
+    mapping: undefined
   });
   const [mappings, setMappings] = useState([]);
 
@@ -129,18 +129,30 @@ const RealFlow = () => {
           setCurrentMapping(Object.assign({}, currentMapping, { type: name }));
         }}
       >
-        <FeelingsInput />
+        <FeelingsInput
+          onSelect={feeling => {
+            setCurrentMapping(
+              Object.assign({}, currentMapping, { mapping: feeling })
+            );
+          }}
+        />
         <ColorInput
           onChange={(s, r, g, b) => {
             setBackgroundColor(s);
           }}
-          onClick={(r, g, b) => {
+          onSelect={(r, g, b) => {
             setCurrentMapping(
               Object.assign({}, currentMapping, { mapping: [r, g, b] })
             );
           }}
         />
-        <ShapeInput />
+        <ShapeInput
+          onSelect={shape => {
+            setCurrentMapping(
+              Object.assign({}, currentMapping, { mapping: shape })
+            );
+          }}
+        />
       </SelectBox>
       <button
         className="next-sample"
@@ -196,6 +208,7 @@ const RealFlow = () => {
           ></div>
         </div>
       </div>
+      {mappingDebug}
     </Layout>
   );
 };

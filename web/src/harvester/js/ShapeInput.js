@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
-export default ({}) => {
+export default ({ onSelect }) => {
   const canvasRef = useRef();
   const [selectedShape, setSelectedShape] = useState("");
 
@@ -76,10 +76,12 @@ export default ({}) => {
     );
     var controls = new OrbitControls(camera, renderer.domElement);
     camera.position.set(0, 3, 5);
-    controls.update();
     controls.enableZoom = false;
+    controls.enablePan = false;
+    controls.enableRotate = false;
     controls.enableDamping = true;
     controls.dampingFactor = 0.2;
+    controls.update();
 
     var mousePosition = new THREE.Vector2();
     const raycaster = new THREE.Raycaster();
@@ -90,6 +92,19 @@ export default ({}) => {
       mousePosition.y = -((e.clientY - size.y) / size.height) * 2 + 1;
     }
     canvasRef.current.addEventListener("mousemove", onMouseMove);
+
+    let selectedShape = "";
+
+    function onClick(e) {
+      raycaster.setFromCamera(mousePosition, camera);
+      hit = raycaster.intersectObjects(group.children);
+      if (hit.length > 0) {
+        setSelectedShape(hit[0].object.name);
+        onSelect(hit[0].object.name);
+        selectedShape = hit[0].object.name;
+      }
+    }
+    canvasRef.current.addEventListener("click", onClick);
 
     function onUpdate() {
       raycaster.setFromCamera(mousePosition, camera);
@@ -104,10 +119,16 @@ export default ({}) => {
     let t;
     var render = function() {
       requestAnimationFrame(render);
-      t = clock.getElapsedTime();
+      t = clock.getDelta();
       for (var i = 0; i < group.children.length; i++) {
+        if (group.children[i].name === selectedShape) {
+          group.children[i].material.color.set(0x666666);
+          group.children[i].rotation.x += t;
+          group.children[i].rotation.y += t;
+          group.children[i].rotation.z += t;
+          continue;
+        }
         group.children[i].material.color.set(0x333333);
-        group.children[i].rotation.y = t;
       }
       onUpdate();
       renderer.render(scene, camera);
