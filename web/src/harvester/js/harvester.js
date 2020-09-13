@@ -14,6 +14,8 @@ import Start from "./Start.js";
 import Finish from "./Finish.js";
 import AudioPlayer from "./AudioPlayer.js";
 import ShapeInput from "./ShapeInput.js";
+import FeelingsInput from "./FeelingsInput.js";
+import ColorInput from "./ColorInput.js";
 
 const Harvester = () => {
   return (

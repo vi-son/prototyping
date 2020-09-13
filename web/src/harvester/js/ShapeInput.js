@@ -100,8 +100,8 @@ export default ({ onSelect }) => {
       hit = raycaster.intersectObjects(group.children);
       if (hit.length > 0) {
         setSelectedShape(hit[0].object.name);
-        onSelect(hit[0].object.name);
         selectedShape = hit[0].object.name;
+        if (onSelect) onSelect(hit[0].object.name);
       }
     }
     canvasRef.current.addEventListener("click", onClick);
@@ -110,7 +110,7 @@ export default ({ onSelect }) => {
       raycaster.setFromCamera(mousePosition, camera);
       hit = raycaster.intersectObjects(group.children);
       if (hit.length > 0) {
-        hit[0].object.material.color.set(0x2b13ff);
+        hit[0].object.material.color.set(0x666666);
         setSelectedShape(hit[0].object.name);
       }
     }
@@ -122,7 +122,7 @@ export default ({ onSelect }) => {
       t = clock.getDelta();
       for (var i = 0; i < group.children.length; i++) {
         if (group.children[i].name === selectedShape) {
-          group.children[i].material.color.set(0x666666);
+          group.children[i].material.color.set(0x2b13ff);
           group.children[i].rotation.x += t;
           group.children[i].rotation.y += t;
           group.children[i].rotation.z += t;

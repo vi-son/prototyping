@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import glsl from "glslify";
+import TWEEN from "@tweenjs/tween.js";
 
 import "../sass/ColorInput.sass";
 
@@ -15,7 +16,7 @@ export default ({ onChange, onSelect }) => {
   const [b, setB] = useState(250);
 
   const handleClick = () => {
-    onSelect(r, g, b);
+    if (onSelect) onSelect(r, g, b);
   };
 
   useEffect(() => {
@@ -45,12 +46,12 @@ export default ({ onChange, onSelect }) => {
 
     var sphereGeometry = new THREE.SphereBufferGeometry(0.03, 32, 32);
     var sphereMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
-    sphereMaterial.depthTest = false;
+    // sphereMaterial.depthTest = false;
     var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
     sphere.position.set(0, 0, 0);
     scene.add(sphere);
 
-    const radius = 0.03;
+    const radius = 0.1;
     const points = new Array(30).fill(0).map((_, i) => {
       return new THREE.Vector3(
         radius * Math.sin((i / 29) * Math.PI * 2.0),
@@ -72,7 +73,7 @@ export default ({ onChange, onSelect }) => {
       size.width / +500,
       size.width / +500,
       size.width / -500,
-      0.1,
+      -10,
       100
     );
     var controls = new OrbitControls(camera, renderer.domElement);
@@ -80,7 +81,7 @@ export default ({ onChange, onSelect }) => {
     controls.update();
     controls.enableZoom = false;
     controls.enableDamping = true;
-    controls.dampingFactor = 0.2;
+    controls.dampingFactor = 0.9;
 
     var mousePosition = new THREE.Vector2();
     const raycaster = new THREE.Raycaster();
@@ -100,6 +101,15 @@ export default ({ onChange, onSelect }) => {
       clientY = e.clientY;
     }
     canvasRef.current.addEventListener("mousedown", onMouseDown, false);
+
+    // var arrowHelper = new THREE.ArrowHelper(
+    //   new THREE.Vector3(0, 0, 0),
+    //   new THREE.Vector3(0, 0, 0),
+    //   1.0,
+    //   0xff0000
+    // );
+    // scene.add(arrowHelper);
+
     function onMouseUp(e) {
       var x = e.clientX;
       var y = e.clientY;
@@ -107,6 +117,30 @@ export default ({ onChange, onSelect }) => {
       if (x != clientX || y != clientY) return;
       else {
         if (hit.length > 0) {
+          const normal = hit[0].point
+            .clone()
+            .sub(new THREE.Vector3(0, 0, 0))
+            .normalize();
+          // arrowHelper.setDirection(normal);
+          const from = {
+            x: camera.position.x,
+            y: camera.position.y,
+            z: camera.position.z
+          };
+          const to = {
+            x: normal.x,
+            y: normal.y,
+            z: normal.z
+          };
+          const cameraTween = new TWEEN.Tween(from).to(to, 1500);
+          cameraTween
+            .onUpdate(function() {
+              camera.position.set(from.x, from.y, from.z);
+              controls.update();
+            })
+            .easing(TWEEN.Easing.Quadratic.InOut);
+          cameraTween.start();
+          controls.update();
           cursor.position.set(hit[0].point.x, hit[0].point.y, hit[0].point.z);
           const red = Math.round((hit[0].point.x + 0.5) * 255);
           const green = Math.round((hit[0].point.y + 0.5) * 255);
@@ -114,7 +148,7 @@ export default ({ onChange, onSelect }) => {
           setR(red);
           setG(green);
           setB(blue);
-          onChange(`rgb(${red}, ${green}, ${blue})`);
+          if (onChange) onChange(`rgba(${red}, ${green}, ${blue}, 0.65)`);
         }
       }
     }
@@ -132,6 +166,8 @@ export default ({ onChange, onSelect }) => {
     var render = function() {
       requestAnimationFrame(render);
       onUpdate();
+      TWEEN.update();
+      cursor.lookAt(camera.position);
       renderer.render(scene, camera);
     };
     render();
@@ -139,61 +175,20 @@ export default ({ onChange, onSelect }) => {
 
   return (
     <div className="color-input">
-      <h4>Color Input</h4>
       <div className="color-name">
-        <span>
-          <b>R:</b> {r}
-        </span>
-        <span>
-          <b>G:</b> {g}
-        </span>
-        <span>
-          <b>B:</b> {b}
-        </span>
+        <h5>Selection:</h5>
+        <h3 className="selected-color" style={{ display: "none" }}>
+          <span className="red">{r}</span>
+          <b>•</b>
+          <span className="green">{g}</span>
+          <b>•</b>
+          <span className="blue">{b}</span>
+        </h3>
+        <div
+          className="color-swatch"
+          style={{ backgroundColor: `rgb(${r}, ${g}, ${b})` }}
+        ></div>
       </div>
-      {/* <div className="fallback-input"> */}
-      {/*   <span> */}
-      {/*     hsl({hue}, {saturation}%, {brightness}%) */}
-      {/*   </span> */}
-      {/*   <div className="sliders"> */}
-      {/*     <input */}
-      {/*       name="hue" */}
-      {/*       type="range" */}
-      {/*       min="0" */}
-      {/*       max="360" */}
-      {/*       defaultValue={hue} */}
-      {/*       onChange={e => { */}
-      {/*         setHue(e.target.value); */}
-      {/*         reactOnChange(); */}
-      {/*       }} */}
-      {/*     /> */}
-      {/*     <input */}
-      {/*       name="saturation" */}
-      {/*       type="range" */}
-      {/*       min="0" */}
-      {/*       max="100" */}
-      {/*       defaultValue={saturation} */}
-      {/*       onChange={e => { */}
-      {/*         setSaturation(e.target.value); */}
-      {/*         reactOnChange(); */}
-      {/*       }} */}
-      {/*     /> */}
-      {/*     <input */}
-      {/*       name="brightness" */}
-      {/*       type="range" */}
-      {/*       min="25" */}
-      {/*       max="100" */}
-      {/*       defaultValue={brightness} */}
-      {/*       onChange={e => { */}
-      {/*         setBrightness(e.target.value); */}
-      {/*         reactOnChange(); */}
-      {/*       }} */}
-      {/*     /> */}
-      {/*   </div> */}
-      {/* </div> */}
-      <h4>
-        {r} {g} {b}
-      </h4>
       <div className="canvas-wrapper">
         <canvas
           width="600"
@@ -205,3 +200,46 @@ export default ({ onChange, onSelect }) => {
     </div>
   );
 };
+
+/*
+<div className="fallback-input">
+  <span>
+    hsl({hue}, {saturation}%, {brightness}%)
+  </span>
+  <div className="sliders">
+    <input
+      name="hue"
+      type="range"
+      min="0"
+      max="360"
+      defaultValue={hue}
+      onChange={e => {
+        setHue(e.target.value);
+        reactOnChange();
+      }}
+    />
+    <input
+      name="saturation"
+      type="range"
+      min="0"
+      max="100"
+      defaultValue={saturation}
+      onChange={e => {
+        setSaturation(e.target.value);
+        reactOnChange();
+      }}
+    />
+    <input
+      name="brightness"
+      type="range"
+      min="25"
+      max="100"
+      defaultValue={brightness}
+      onChange={e => {
+        setBrightness(e.target.value);
+        reactOnChange();
+      }}
+    />
+  </div>
+</div>;
+*/

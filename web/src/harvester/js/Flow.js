@@ -8,17 +8,6 @@ import ColorInput from "./ColorInput.js";
 import FeelingsInput from "./FeelingsInput.js";
 import ShapeInput from "./ShapeInput.js";
 
-function Flow() {
-  return (
-    <Layout>
-      <h2>Flow</h2>
-      <Link className="flow-button" to="/harvester.html/result">
-        Finish
-      </Link>
-    </Layout>
-  );
-}
-
 const RealFlow = () => {
   const history = useHistory();
   const scenarioCount = 10;
@@ -61,6 +50,7 @@ const RealFlow = () => {
 
   const moveToNextScenario = e => {
     if (scenarioCount === completedCount) {
+      console.log(JSON.stringify(mappings));
       history.push("/harvester.html/result");
       return;
     }
@@ -130,9 +120,11 @@ const RealFlow = () => {
         }}
       >
         <FeelingsInput
-          onSelect={feeling => {
+          onSelect={(feeling, point) => {
             setCurrentMapping(
-              Object.assign({}, currentMapping, { mapping: feeling })
+              Object.assign({}, currentMapping, {
+                mapping: { feeling: feeling, point: point }
+              })
             );
           }}
         />

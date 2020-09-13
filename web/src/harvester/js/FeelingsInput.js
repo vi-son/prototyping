@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { WEBGL } from "../../shared/js/webgl.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import TWEEN from "@tweenjs/tween.js";
 
 import "../sass/FeelingsInput.sass";
 
@@ -16,6 +17,7 @@ if (WEBGL.isWebGLAvailable()) {
 
 export default ({ onSelect }) => {
   const [feeling, setFeeling] = useState("");
+  const [hoverFeeling, setHoverFeeling] = useState("");
   const [svgPoint, setSvgPoint] = useState([0, 0]);
   const [open, setOpen] = useState(0);
   const canvas = useRef();
@@ -23,14 +25,14 @@ export default ({ onSelect }) => {
   const [newGeometry, setNewGeometry] = useState(new THREE.BufferGeometry());
 
   const feelings = [
-    ["klar", "aufmerksam", "neugierig"],
-    ["begeistert", "froh", "gelassen"],
-    ["bewundernd", "vertrauend", "akzeptierend"],
-    ["erschrocken", "ängstlich", "besort"],
-    ["erstaunt", "überrascht", "verwirrt"],
-    ["deprimiert", "traurig", "nachdenklich"],
-    ["angewiedert", "ablehnend", "gelangweilt"],
-    ["gereizg", "verärgert", "wütend"]
+    ["vigilance", "anticipation", "interest"],
+    ["ecstasy", "joy", "serenity"],
+    ["admiration", "trust", "acceptance"],
+    ["terror", "fear", "apprehension"],
+    ["amazement", "surprise", "distraction"],
+    ["grief", "sadness", "pensiveness"],
+    ["loathing", "disgust", "boredom"],
+    ["rage", "anger", "annoyance"]
   ];
   const feelingMap = new Map();
 
@@ -40,22 +42,29 @@ export default ({ onSelect }) => {
   const reactOnSlider = () => {};
 
   useEffect(() => {
+    let feelingPoint = new THREE.Vector3();
     let size = canvas.current.getBoundingClientRect();
     var scene = new THREE.Scene();
     const root = new THREE.Object3D();
-    var material = new THREE.MeshPhongMaterial({
-      color: 0x424242,
-      shininess: 10,
-      flatShading: true,
-      side: THREE.DoubleSide
+
+    var material = new THREE.MeshLambertMaterial({
+      color: 0x333333,
+      side: THREE.DoubleSide,
+      flatShading: true
     });
+    // var material = new THREE.MeshPhongMaterial({
+    //   color: 0x424242,
+    //   shininess: 10,
+    //   flatShading: true,
+    //   side: THREE.DoubleSide
+    // });
     const aspect = size.width / size.height;
     var camera = new THREE.OrthographicCamera(
       size.width / -400,
       size.width / +400,
       size.width / +400,
       size.width / -400,
-      0.1,
+      0.01,
       100
     );
     var renderer = new THREE.WebGLRenderer({
@@ -80,7 +89,7 @@ export default ({ onSelect }) => {
       let prevX1 = x1;
       let prevZ1 = z1;
       let prevY = y;
-      vert.push(0, 0.3, 0);
+      vert.push(0, 0.5, 0);
       vert.push(x, y, z);
       vert.push(x1, y, z1);
       var vertices = new Float32Array(vert);
@@ -127,9 +136,16 @@ export default ({ onSelect }) => {
       });
     });
     scene.add(root);
-    var light = new THREE.HemisphereLight(0xffffff, 0x666666, 2.75);
+    var light = new THREE.HemisphereLight(0xffffff, 0x666666, 1.5);
     light.position.set(0, 10, 0);
     scene.add(light);
+    var directionalLight = new THREE.DirectionalLight(0xffffff, 3.5);
+    directionalLight.position.set(
+      camera.position.x + 1,
+      camera.position.y + 1,
+      camera.position.z + 1
+    );
+    scene.add(directionalLight);
     var controls = new OrbitControls(camera, renderer.domElement);
     camera.position.set(1, 1, 1);
     controls.update();
@@ -142,7 +158,7 @@ export default ({ onSelect }) => {
     points.push(new THREE.Vector3(-0.5, 0.5, 0));
     var lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
     var line = new THREE.Line(lineGeometry, lineMaterial);
-    scene.add(line);
+    // scene.add(line);
 
     var mousePosition = new THREE.Vector2();
     const raycaster = new THREE.Raycaster();
@@ -155,7 +171,7 @@ export default ({ onSelect }) => {
       lineGeometry.setFromPoints(points);
       for (var i = 0, j = root.children.length; i < j; i++) {
         if (root.children[i].id === selectedId) {
-          root.children[i].material.color.set(0x666666);
+          root.children[i].material.color.set(0x2b13ff);
           continue;
         }
         root.children[i].material.color.set(0x333333);
@@ -164,8 +180,9 @@ export default ({ onSelect }) => {
       hit = raycaster.intersectObjects(root.children);
       if (hit.length > 0) {
         const id = hit[0].object.id;
-        setFeeling(feelingMap.get(id));
-        hit[0].object.material.color = new THREE.Color(0x000000);
+        setHoverFeeling(feelingMap.get(id));
+        hit[0].object.material.color = new THREE.Color(0x2b13ff);
+      } else {
       }
     };
 
@@ -183,6 +200,14 @@ export default ({ onSelect }) => {
     }
     canvas.current.addEventListener("mousedown", onMouseDown, false);
 
+    // var arrowHelper = new THREE.ArrowHelper(
+    //   new THREE.Vector3(0, 0, 0),
+    //   new THREE.Vector3(0, 0, 0),
+    //   1.0,
+    //   0xff0000
+    // );
+    // scene.add(arrowHelper);
+
     function onMouseUp(e) {
       var x = e.clientX;
       var y = e.clientY;
@@ -190,26 +215,54 @@ export default ({ onSelect }) => {
       if (x != clientX || y != clientY) return;
       else {
         if (hit.length > 0) {
+          const normal = hit[0].point
+            .clone()
+            .sub(new THREE.Vector3(0, 0, 0))
+            .normalize();
+          // arrowHelper.setDirection(normal);
+          const from = {
+            x: camera.position.x,
+            y: camera.position.y,
+            z: camera.position.z
+          };
+          const to = {
+            x: normal.x,
+            y: normal.y,
+            z: normal.z
+          };
+          const cameraTween = new TWEEN.Tween(from).to(to, 1500);
+          cameraTween
+            .onUpdate(function() {
+              camera.position.set(from.x, from.y, from.z);
+              directionalLight.position.set(from.x, from.y, from.z);
+              controls.update();
+            })
+            .easing(TWEEN.Easing.Quadratic.InOut);
+          cameraTween.start();
+          controls.update();
           points[0] = hit[0].point;
           const id = hit[0].object.id;
           setFeeling(feelingMap.get(id));
-          onSelect(feelingMap.get(id));
+          feelingPoint = hit[0].point;
           selectedId = id;
+          if (onSelect) {
+            onSelect(feelingMap.get(id), feelingPoint);
+          }
         }
       }
     }
     canvas.current.addEventListener("mouseup", onMouseUp);
-
-    window.addEventListener("resize", onWindowResize, false);
 
     function onWindowResize() {
       size = canvas.current.getBoundingClientRect();
       camera.updateProjectionMatrix();
       renderer.setSize(size.width, size.height);
     }
+    window.addEventListener("resize", onWindowResize, false);
 
     var render = function() {
       requestAnimationFrame(render);
+      TWEEN.update();
       onUpdate();
       renderer.render(scene, camera);
     };
@@ -218,90 +271,22 @@ export default ({ onSelect }) => {
 
   return (
     <div className="feelings-input">
-      <h4>Feelings Input</h4>
-      {/* <input */}
-      {/*   type="range" */}
-      {/*   defaultValue="0" */}
-      {/*   min="0" */}
-      {/*   max="100" */}
-      {/*   onChange={e => { */}
-      {/*     setOpen(e.target.value); */}
-      {/*     reactOnSlider(); */}
-      {/*   }} */}
-      {/* /> */}
       <div className="canvas-wrapper">
-        <h4 className="feeling-name">Gefühl: {feeling}</h4>
+        {feeling.length > 0 ? (
+          <div className="selected-feeling">
+            <h5>Selection:</h5>
+            <h3 className="feeling-name">{feeling}</h3>
+          </div>
+        ) : (
+          <></>
+        )}
+        {hoverFeeling.length > 0 ? (
+          <h4 className="hover-feeling">{hoverFeeling}</h4>
+        ) : (
+          <></>
+        )}
         <canvas width="600" height="600" ref={canvas}></canvas>
       </div>
-      <svg
-        style={{ display: "none" }}
-        ref={svg}
-        stroke="black"
-        width={2 * center}
-        height={2 * center}
-        fill="none"
-        strokeWidth="3"
-        id="svg"
-      >
-        {feelings.map((row, i) => {
-          const radius = 80;
-          return (
-            <g
-              key={i}
-              transform={`translate(${center},${center})`}
-              onMouseMove={e => {
-                setFeeling(e.target.dataset.feeling);
-                var p = svg.current.createSVGPoint();
-                p.x = e.clientX;
-                p.y = e.clientY;
-                p.matrixTransform(svg.current.getScreenCTM().inverse());
-                var ctm = svg.current.getScreenCTM();
-                var inverse = ctm.inverse();
-                var p = p.matrixTransform(inverse);
-                setSvgPoint([p.x, p.y]);
-              }}
-            >
-              {row.map((f, j) => {
-                let q = 0.05;
-                let a = ((i + 0 + q * j) / n) * 2 * Math.PI;
-                let b = ((i + 1 - q * j) / n) * 2 * Math.PI;
-                let a1 = ((i + 0 + q * (j + 1)) / n) * 2 * Math.PI;
-                let b1 = ((i + 1 - q * (j + 1)) / n) * 2 * Math.PI;
-                if (j == 2) {
-                  a1 = ((i + 0.5) / n) * 2 * Math.PI;
-                  b1 = ((i + 0.5) / n) * 2 * Math.PI;
-                }
-                const r = radius * 1.5 * j;
-                const x0 = radius * j * Math.sin(a);
-                const y0 = radius * j * Math.cos(a);
-                const x1 = radius * (j + 1) * Math.sin(a1);
-                const y1 = radius * (j + 1) * Math.cos(a1);
-                const x2 = radius * (j + 1) * Math.sin(b1);
-                const y2 = radius * (j + 1) * Math.cos(b1);
-                const x3 = radius * j * Math.sin(b);
-                const y3 = radius * j * Math.cos(b);
-                return (
-                  <polygon
-                    key={`${i}${j}`}
-                    stroke="black"
-                    fill="var(--color-snow)"
-                    points={`${x0},${y0} ${x1},${y1} ${x2},${y2} ${x3},${y3}`}
-                    data-feeling={f}
-                  ></polygon>
-                );
-              })}
-              <circle
-                id="cursor"
-                cx={svgPoint[0] - center}
-                cy={svgPoint[1] - center}
-                r="10"
-                stroke="none"
-                fill="currentColor"
-              ></circle>
-            </g>
-          );
-        })}
-      </svg>
     </div>
   );
 };

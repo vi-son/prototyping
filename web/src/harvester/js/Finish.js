@@ -2,10 +2,11 @@ import React, { useEffect, useRef } from "react";
 import { useHistory } from "react-router-dom";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import data from "./example-mapping.json";
 
 import Layout from "./Layout.js";
 
-function Finish() {
+function Finish({ mapping }) {
   const history = useHistory();
   const canvasRef = useRef();
 
@@ -64,7 +65,7 @@ function Finish() {
         <h2>Congratulations</h2>
         <h4>You finished 10 mappings</h4>
         <h4 className="token-heading">
-          We've built a token from your mappings (TODO)':
+          We've built a toten from your mappings (TODO)':
         </h4>
         <div className="finish-canvas-wrapper">
           <canvas ref={canvasRef} width="500" height="500"></canvas>
@@ -73,6 +74,7 @@ function Finish() {
           Another round
         </button>
       </main>
+      {JSON.stringify(data)}
     </Layout>
   );
 }

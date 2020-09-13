@@ -145,21 +145,6 @@ class AudioPlayer extends React.Component {
         : 0;
     return (
       <div className="audio-player">
-        {/* <div className="controls"> */}
-        {/*   <div className="btn-play" onClick={() => this.fadeInAndPlay()}> */}
-        {/*     Play */}
-        {/*   </div> */}
-        {/*   <div className="btn-pause" onClick={() => this.fadeOutAndStop()}> */}
-        {/*     Pause */}
-        {/*   </div> */}
-        {/* </div> */}
-        <div className="timeline" onClick={this.changeTime}>
-          <div className="playhead" style={{ left: `${left}%` }}></div>
-        </div>
-        <div className="volume">
-          <div className="knob"></div>
-        </div>
-
         <svg width={200} height={200}>
           <g
             stroke="var(--color-darkness)"
@@ -180,6 +165,7 @@ class AudioPlayer extends React.Component {
               d={`M ${startX} ${startY} A ${r} ${r} 0 ${way} ${sweep} ${endX} ${endY}`}
             />
             <polygon
+              style={{ cursor: "pointer" }}
               transform={`translate(${cx + r / 2},${cy + r / 2})`}
               points={
                 this.state.playing
@@ -198,7 +184,6 @@ class AudioPlayer extends React.Component {
           </g>
         </svg>
         {/* {debug} */}
-        {this.state.playing ? "Pause" : "Playing"}
       </div>
     );
   }

@@ -1,0 +1,93 @@
+{
+  "mapping": [
+    {
+      "audiosample": "gig-teaser-20200829-beat01.mp3",
+      "type": "feeling",
+      "mapping": {
+        "feeling": "vigilance",
+        "point": {
+          "x": 0.22978917490010597,
+          "y": 0.1255315521250474,
+          "z": 0.2792866495831642
+        }
+      }
+    },
+    {
+      "audiosample": "gig-teaser-20200829-beat01.mp3",
+      "type": "color",
+      "mapping": [
+        109,
+        255,
+        81
+      ]
+    },
+    {
+      "audiosample": "gig-teaser-20200829-beat01.mp3",
+      "type": "shape",
+      "mapping": "Octahedron"
+    },
+    {
+      "audiosample": "gig-teaser-20200829-beat01.mp3",
+      "type": "color",
+      "mapping": [
+        53,
+        217,
+        255
+      ]
+    },
+    {
+      "audiosample": "gig-teaser-20200829-beat01.mp3",
+      "type": "color",
+      "mapping": [
+        53,
+        217,
+        255
+      ]
+    },
+    {
+      "audiosample": "gig-teaser-20200829-beat01.mp3",
+      "type": "color",
+      "mapping": [
+        53,
+        217,
+        255
+      ]
+    },
+    {
+      "audiosample": "gig-teaser-20200829-beat01.mp3",
+      "type": "color",
+      "mapping": [
+        53,
+        217,
+        255
+      ]
+    },
+    {
+      "audiosample": "gig-teaser-20200829-beat01.mp3",
+      "type": "color",
+      "mapping": [
+        53,
+        217,
+        255
+      ]
+    },
+    {
+      "audiosample": "gig-teaser-20200829-beat01.mp3",
+      "type": "color",
+      "mapping": [
+        53,
+        217,
+        255
+      ]
+    },
+    {
+      "audiosample": "gig-teaser-20200829-beat01.mp3",
+      "type": "color",
+      "mapping": [
+        53,
+        217,
+        255
+      ]
+    }
+  ]
+}
