@@ -1,0 +1,107 @@
+import React, { useRef, useEffect } from "react";
+import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import glsl from "glslify";
+
+export default ({ mapping }) => {
+  const canvasRef = useRef();
+
+  const colorMappings = mapping.mapping
+    .filter(m => m.type === "color")
+    .map((m, i) => {
+      return {
+        index: i,
+        color: m.mapping
+      };
+    });
+
+  useEffect(() => {
+    const size = canvasRef.current.getBoundingClientRect();
+    // Scene
+    const scene = new THREE.Scene();
+    // Renderer
+    const renderer = new THREE.WebGLRenderer({
+      canvas: canvasRef.current,
+      antialias: 1,
+      alpha: true
+    });
+    // Light
+    var light = new THREE.HemisphereLight(0xffffff, 0x666666, 3.75);
+    light.position.set(0, 10, 0);
+    scene.add(light);
+
+    // Mappings
+    const colorMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        u_color_point_count: { value: colorMappings.length - 1 },
+        u_resolution: { value: new THREE.Vector2(size.width, size.height) },
+        u_color_points: {
+          value: colorMappings.map(m => m.index / colorMappings.length)
+        },
+        u_colors: {
+          value: colorMappings.map(
+            m =>
+              new THREE.Vector3(
+                m.color[0] / 255,
+                m.color[1] / 255,
+                m.color[2] / 255
+              )
+          )
+        }
+      },
+      vertexShader: glsl.compile(require("../glsl/totem.vert.glsl")),
+      fragmentShader: glsl.compile(require("../glsl/totem.frag.glsl")),
+      doubleSided: true
+    });
+    var geometry = new THREE.PlaneGeometry(5, 5, 32);
+    var plane = new THREE.Mesh(geometry, colorMaterial);
+    scene.add(plane);
+
+    // Geometry
+    // var sphereGeometry = new THREE.SphereBufferGeometry(1, 32, 12);
+    // var sphereMaterial = new THREE.MeshPhongMaterial({
+    //   color: 0x0332b3,
+    //   flatShading: true
+    // });
+    // sphereMaterial.depthTest = false;
+    // var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+    // sphere.position.set(0, 0, 0);
+    // scene.add(sphere);
+
+    // Camera
+    // const camera = new THREE.OrthographicCamera(
+    //   size.width / -100,
+    //   size.width / +100,
+    //   size.width / +100,
+    //   size.width / -100,
+    //   0.1,
+    //   100
+    // );
+    var camera = new THREE.PerspectiveCamera(
+      45,
+      size.width / size.height,
+      1,
+      1000
+    );
+    var controls = new OrbitControls(camera, renderer.domElement);
+    camera.position.set(5, 5, 5);
+    controls.update();
+    controls.enableZoom = false;
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.2;
+
+    var render = function() {
+      requestAnimationFrame(render);
+      renderer.render(scene, camera);
+    };
+    render();
+  }, []);
+
+  return (
+    <div className="totem">
+      <div className="canvas-wrapper">
+        <canvas ref={canvasRef}></canvas>
+      </div>
+    </div>
+  );
+};
