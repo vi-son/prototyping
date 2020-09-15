@@ -8,9 +8,9 @@ import ColorInput from "./ColorInput.js";
 import FeelingsInput from "./FeelingsInput.js";
 import ShapeInput from "./ShapeInput.js";
 
-const RealFlow = () => {
+const RealFlow = ({ onFinish }) => {
   const history = useHistory();
-  const scenarioCount = 10;
+  const scenarioCount = 5;
   const fadeDuration = 1000;
   const audioPlayerRef = useRef();
   const selectBoxRef = useRef();
@@ -50,8 +50,15 @@ const RealFlow = () => {
 
   const moveToNextScenario = e => {
     if (scenarioCount === completedCount) {
-      console.log(JSON.stringify(mappings));
-      history.push("/harvester.html/result");
+      const downloadLink = document.createElement("a");
+      const dataStr =
+        "data:text/json;charset=utf-8," +
+        encodeURIComponent(JSON.stringify(mappings));
+      downloadLink.href = dataStr;
+      downloadLink.download = "result.json";
+      document.body.append(downloadLink);
+      downloadLink.click();
+      onFinish(JSON.stringify(mappings), history);
       return;
     }
     setCompletedCount(completedCount + 1);

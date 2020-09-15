@@ -3,10 +3,13 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import glsl from "glslify";
 
+import "../sass/Totem.sass";
+
 export default ({ mapping }) => {
   const canvasRef = useRef();
+  const canvasWrapperRef = useRef();
 
-  const colorMappings = mapping.mapping
+  const colorMappings = mapping
     .filter(m => m.type === "color")
     .map((m, i) => {
       return {
@@ -15,8 +18,31 @@ export default ({ mapping }) => {
       };
     });
 
+  const shapeMappings = mapping
+    .filter(m => m.type === "shape")
+    .map((m, i) => {
+      return {
+        index: i,
+        shape: m.mapping
+      };
+    });
+
+  const feelingMappings = mapping
+    .filter(m => m.type === "feeling")
+    .map((m, i) => {
+      return {
+        index: i,
+        feeling: m.mapping
+      };
+    });
+
+  console.log(feelingMappings);
+  console.log(colorMappings);
+  console.log(shapeMappings);
+
   useEffect(() => {
-    const size = canvasRef.current.getBoundingClientRect();
+    // Size
+    const size = canvasWrapperRef.current.getBoundingClientRect();
     // Scene
     const scene = new THREE.Scene();
     // Renderer
@@ -25,37 +51,52 @@ export default ({ mapping }) => {
       antialias: 1,
       alpha: true
     });
+    renderer.setSize(size.width, size.height);
     // Light
     var light = new THREE.HemisphereLight(0xffffff, 0x666666, 3.75);
     light.position.set(0, 10, 0);
     scene.add(light);
 
     // Mappings
-    const colorMaterial = new THREE.ShaderMaterial({
-      uniforms: {
-        u_color_point_count: { value: colorMappings.length - 1 },
-        u_resolution: { value: new THREE.Vector2(size.width, size.height) },
-        u_color_points: {
-          value: colorMappings.map(m => m.index / colorMappings.length)
+    if (colorMappings.length > 0) {
+      const colorMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+          u_color_point_count: { value: colorMappings.length - 1 },
+          u_resolution: { value: new THREE.Vector2(size.width, size.height) },
+          u_color_points: {
+            value: colorMappings.map(m => m.index / colorMappings.length)
+          },
+          u_colors: {
+            value: colorMappings.map(
+              m =>
+                new THREE.Vector3(
+                  m.color[0] / 255,
+                  m.color[1] / 255,
+                  m.color[2] / 255
+                )
+            )
+          }
         },
-        u_colors: {
-          value: colorMappings.map(
-            m =>
-              new THREE.Vector3(
-                m.color[0] / 255,
-                m.color[1] / 255,
-                m.color[2] / 255
-              )
-          )
-        }
-      },
-      vertexShader: glsl.compile(require("../glsl/totem.vert.glsl")),
-      fragmentShader: glsl.compile(require("../glsl/totem.frag.glsl")),
-      doubleSided: true
-    });
-    var geometry = new THREE.PlaneGeometry(5, 5, 32);
-    var plane = new THREE.Mesh(geometry, colorMaterial);
-    scene.add(plane);
+        vertexShader: glsl.compile(require("../glsl/totem.vert.glsl")),
+        fragmentShader: glsl.compile(require("../glsl/totem.frag.glsl"))
+      });
+      var geometry = new THREE.PlaneGeometry(5, 5, 32);
+      var plane = new THREE.Mesh(geometry, colorMaterial);
+      scene.add(plane);
+    }
+
+    // Bezier
+    var curve = new THREE.QuadraticBezierCurve3(
+      new THREE.Vector3(0, 0, 0),
+      ...feelingMappings.map(m => m.feeling.point),
+      new THREE.Vector3(0, 1, 0)
+    );
+    var points = curve.getPoints(50);
+    var curveGeometry = new THREE.BufferGeometry().setFromPoints(points);
+    var curveMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
+    var curveObject = new THREE.Line(curveGeometry, curveMaterial);
+    curveObject.scale.set(3, 3, 3);
+    scene.add(curveObject);
 
     // Geometry
     // var sphereGeometry = new THREE.SphereBufferGeometry(1, 32, 12);
@@ -99,7 +140,7 @@ export default ({ mapping }) => {
 
   return (
     <div className="totem">
-      <div className="canvas-wrapper">
+      <div className="canvas-wrapper" ref={canvasWrapperRef}>
         <canvas ref={canvasRef}></canvas>
       </div>
     </div>

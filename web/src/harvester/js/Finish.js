@@ -5,9 +5,11 @@ import data from "./example-mapping.json";
 import Layout from "./Layout.js";
 import Totem from "./Totem.js";
 
-function Finish({ mapping }) {
+function Finish({ mappingJson }) {
   const history = useHistory();
   const canvasRef = useRef();
+
+  const mappings = JSON.parse(mappingJson);
 
   return (
     <Layout>
@@ -18,7 +20,7 @@ function Finish({ mapping }) {
         <h4 className="token-heading">
           We've built a toten from your mappings (TODO)':
         </h4>
-        <Totem mapping={data}></Totem>
+        <Totem mapping={mappings}></Totem>
         <button className="flow-button" onClick={() => history.push("/flow")}>
           Another round
         </button>
