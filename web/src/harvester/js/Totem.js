@@ -58,8 +58,9 @@ export default ({ mapping }) => {
     scene.add(light);
 
     // Mappings
+    let colorMaterial;
     if (colorMappings.length > 0) {
-      const colorMaterial = new THREE.ShaderMaterial({
+      colorMaterial = new THREE.ShaderMaterial({
         uniforms: {
           u_color_point_count: { value: colorMappings.length - 1 },
           u_resolution: { value: new THREE.Vector2(size.width, size.height) },
@@ -82,21 +83,53 @@ export default ({ mapping }) => {
       });
       var geometry = new THREE.PlaneGeometry(5, 5, 32);
       var plane = new THREE.Mesh(geometry, colorMaterial);
-      scene.add(plane);
+      // scene.add(plane);
     }
 
     // Bezier
     var curve = new THREE.QuadraticBezierCurve3(
       new THREE.Vector3(0, 0, 0),
-      ...feelingMappings.map(m => m.feeling.point),
+      ...feelingMappings.map(
+        (m, i) =>
+          new THREE.Vector3(
+            0.1 * Math.sin(m.feeling.point.x * Math.PI * 2.0),
+            i / feelingMappings.length,
+            0.1 * Math.cos(m.feeling.point.z * Math.PI * 2.0)
+          )
+      ),
       new THREE.Vector3(0, 1, 0)
     );
     var points = curve.getPoints(50);
     var curveGeometry = new THREE.BufferGeometry().setFromPoints(points);
     var curveMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
     var curveObject = new THREE.Line(curveGeometry, curveMaterial);
-    curveObject.scale.set(3, 3, 3);
-    scene.add(curveObject);
+    // curveObject.position.set(0, -0.5, 0);
+    // scene.add(curveObject);
+
+    // Spheres
+    feelingMappings.map(m => {
+      var sphereGeometry = new THREE.SphereBufferGeometry(0.1, 32, 12);
+      var sphereMaterial = new THREE.MeshPhongMaterial({
+        color: 0x0332b3,
+        flatShading: true
+      });
+      var sphere = new THREE.Mesh(sphereGeometry, colorMaterial);
+      sphere.position.set(
+        m.feeling.point.x,
+        m.feeling.point.y,
+        m.feeling.point.z
+      );
+      scene.add(sphere);
+      var curve = new THREE.QuadraticBezierCurve3(
+        new THREE.Vector3(0, -0.5, 0),
+        new THREE.Vector3(m.feeling.point.x, 0, m.feeling.point.z),
+        sphere.position
+      );
+      var points = curve.getPoints(50);
+      var geometry = new THREE.BufferGeometry().setFromPoints(points);
+      var curveToFeeling = new THREE.Line(geometry, curveMaterial);
+      scene.add(curveToFeeling);
+    });
 
     // Geometry
     // var sphereGeometry = new THREE.SphereBufferGeometry(1, 32, 12);
@@ -121,11 +154,11 @@ export default ({ mapping }) => {
     var camera = new THREE.PerspectiveCamera(
       45,
       size.width / size.height,
-      1,
+      0.01,
       1000
     );
     var controls = new OrbitControls(camera, renderer.domElement);
-    camera.position.set(5, 5, 5);
+    camera.position.set(1.5, 1.5, 1.5);
     controls.update();
     controls.enableZoom = false;
     controls.enableDamping = true;

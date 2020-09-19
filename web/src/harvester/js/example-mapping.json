@@ -1,5 +1,4 @@
-{
-  "mapping": [
+[ 
     {
       "audiosample": "gig-teaser-20200829-beat01.mp3",
       "type": "feeling",
@@ -89,5 +88,4 @@
         255
       ]
     }
-  ]
-}
+ ]

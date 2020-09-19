@@ -14,12 +14,12 @@ function Finish({ mappingJson }) {
   return (
     <Layout>
       <main className="center-column">
-        <span className="emoji">&#127881;</span>
-        <h2>Congratulations</h2>
-        <h4>You finished 10 mappings</h4>
-        <h4 className="token-heading">
-          We've built a toten from your mappings (TODO)':
-        </h4>
+        {/* <span className="emoji">&#127881;</span> */}
+        {/* <h2>Congratulations</h2> */}
+        {/* <h4>You finished 10 mappings</h4> */}
+        {/* <h4 className="token-heading"> */}
+        {/*   We've built a toten from your mappings (TODO)': */}
+        {/* </h4> */}
         <Totem mapping={mappings}></Totem>
         <button className="flow-button" onClick={() => history.push("/flow")}>
           Another round

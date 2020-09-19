@@ -14,6 +14,8 @@ import ColorInput from "./ColorInput.js";
 const Harvester = () => {
   const [mappingJson, setMappingJson] = useState(undefined);
 
+  const exampleMapping = require("./example-mapping.json");
+
   return (
     <Router
       basename={
@@ -25,6 +27,7 @@ const Harvester = () => {
       <Switch>
         <Route exact path="/">
           <Start />
+          {/* <Finish mappingJson={JSON.stringify(exampleMapping)} /> */}
         </Route>
         <Route path="/flow">
           <Flow

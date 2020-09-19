@@ -10,7 +10,7 @@ import ShapeInput from "./ShapeInput.js";
 
 const RealFlow = ({ onFinish }) => {
   const history = useHistory();
-  const scenarioCount = 5;
+  const scenarioCount = 10;
   const fadeDuration = 1000;
   const audioPlayerRef = useRef();
   const selectBoxRef = useRef();
