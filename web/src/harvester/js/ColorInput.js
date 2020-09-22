@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import glsl from "glslify";
 import TWEEN from "@tweenjs/tween.js";
 
 import "../sass/ColorInput.sass";
@@ -37,8 +36,8 @@ export default ({ onChange, onSelect }) => {
     const geometry = new THREE.BoxGeometry(1, 1, 1);
     const material = new THREE.ShaderMaterial({
       uniforms: {},
-      vertexShader: glsl.compile(require("../glsl/colorcube.vert.glsl")),
-      fragmentShader: glsl.compile(require("../glsl/colorcube.frag.glsl"))
+      vertexShader: require("../glsl/colorcube.vert.glsl"),
+      fragmentShader: require("../glsl/colorcube.frag.glsl")
     });
 
     const cube = new THREE.Mesh(geometry, material);

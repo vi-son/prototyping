@@ -1,7 +1,6 @@
 import React, { useRef, useEffect } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import glsl from "glslify";
 
 import "../sass/Totem.sass";
 
@@ -78,8 +77,8 @@ export default ({ mapping }) => {
             )
           }
         },
-        vertexShader: glsl.compile(require("../glsl/totem.vert.glsl")),
-        fragmentShader: glsl.compile(require("../glsl/totem.frag.glsl"))
+        vertexShader: require("../glsl/totem.vert.glsl"),
+        fragmentShader: require("../glsl/totem.frag.glsl")
       });
       var geometry = new THREE.PlaneGeometry(5, 5, 32);
       var plane = new THREE.Mesh(geometry, colorMaterial);
