@@ -217,11 +217,36 @@ export default ({ mapping }) => {
     clock.start();
     let time = 0.0;
 
+    // Background
+    var backgroundCamera = new THREE.OrthographicCamera(
+      -2 / size.width,
+      +2 / size.width,
+      +2 / size.width,
+      -2 / size.width,
+      -1,
+      100
+    );
+    const backgroundScene = new THREE.Scene();
+    const backgroundMaterial = new THREE.ShaderMaterial({
+      vertexShader: require("../glsl/background.vert.glsl"),
+      fragmentShader: require("../glsl/background.frag.glsl"),
+      uniforms: {
+        uResolution: { value: new THREE.Vector2(size.width, size.height) }
+      },
+      depthWrite: false
+    });
+    var planeGeometry = new THREE.PlaneGeometry(2, 2);
+    var backgroundPlane = new THREE.Mesh(planeGeometry, backgroundMaterial);
+    backgroundScene.add(backgroundPlane);
+    renderer.autoClear = false;
+
     // Render loop
     var render = function() {
       requestAnimationFrame(render);
       time = clock.getElapsedTime();
       tubeMaterial.uniforms.uTime.value = time;
+      renderer.clear();
+      renderer.render(backgroundPlane, backgroundCamera);
       renderer.render(scene, camera);
     };
     render();
