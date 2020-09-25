@@ -2,11 +2,15 @@ import React, { useRef, useEffect } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
+import createLineGeometry from "./createLineGeometry.js";
+
 import "../sass/Totem.sass";
 
 export default ({ mapping }) => {
   const canvasRef = useRef();
   const canvasWrapperRef = useRef();
+
+  const audioSamples = mapping.map(e => e.audiosample);
 
   const colorMappings = mapping
     .filter(m => m.type === "color")
@@ -118,7 +122,7 @@ export default ({ mapping }) => {
         m.feeling.point.y,
         m.feeling.point.z
       );
-      scene.add(sphere);
+      // scene.add(sphere);
       var curve = new THREE.QuadraticBezierCurve3(
         new THREE.Vector3(0, -0.5, 0),
         new THREE.Vector3(m.feeling.point.x, 0, m.feeling.point.z),
@@ -127,7 +131,7 @@ export default ({ mapping }) => {
       var points = curve.getPoints(50);
       var geometry = new THREE.BufferGeometry().setFromPoints(points);
       var curveToFeeling = new THREE.Line(geometry, curveMaterial);
-      scene.add(curveToFeeling);
+      // scene.add(curveToFeeling);
     });
 
     // Geometry
@@ -140,6 +144,35 @@ export default ({ mapping }) => {
     // var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
     // sphere.position.set(0, 0, 0);
     // scene.add(sphere);
+
+    //// TUBES
+    const numSides = 8;
+    const subdivisions = 200;
+    const tubeGeometry = createLineGeometry(numSides, subdivisions);
+    const tubeMaterial = new THREE.RawShaderMaterial({
+      vertexShader: require("../glsl/tubes.vert.glsl"),
+      fragmentShader: require("../glsl/tubes.frag.glsl"),
+      side: THREE.FrontSide,
+      extensions: {
+        deriviatives: true
+      },
+      defines: {
+        lengthSegments: subdivisions.toFixed(1),
+        FLAT_SHADED: false
+      },
+      uniforms: {
+        uResolution: {
+          type: "vec2",
+          value: new THREE.Vector2(size.width, size.height)
+        },
+        uThickness: { type: "f", value: 0.1 },
+        uTime: { type: "f", value: 2.5 },
+        uRadialSegments: { type: "f", value: numSides }
+      }
+    });
+    const tubeMesh = new THREE.Mesh(tubeGeometry, tubeMaterial);
+    tubeMesh.frustumCulled = false;
+    scene.add(tubeMesh);
 
     // Camera
     // const camera = new THREE.OrthographicCamera(
@@ -159,12 +192,36 @@ export default ({ mapping }) => {
     var controls = new OrbitControls(camera, renderer.domElement);
     camera.position.set(1.5, 1.5, 1.5);
     controls.update();
-    controls.enableZoom = false;
+    controls.enableZoom = true;
     controls.enableDamping = true;
     controls.dampingFactor = 0.2;
 
+    // Audio listener
+    const audioLoader = new THREE.AudioLoader();
+    audioSamples.map(sample => {
+      console.log(sample);
+      const listener = new THREE.AudioListener();
+      camera.add(listener);
+      const sound = new THREE.PositionalAudio(listener);
+      // load a sound and set it as the Audio object's buffer
+      audioLoader.load(`/audio/samples/${sample}`, function(buffer) {
+        sound.setBuffer(buffer);
+        sound.setLoop(true);
+        sound.setVolume(1.0);
+        sound.play();
+      });
+    });
+
+    // Clock + timings
+    var clock = new THREE.Clock();
+    clock.start();
+    let time = 0.0;
+
+    // Render loop
     var render = function() {
       requestAnimationFrame(render);
+      time = clock.getElapsedTime();
+      tubeMaterial.uniforms.uTime.value = time;
       renderer.render(scene, camera);
     };
     render();

@@ -72,6 +72,12 @@ const RealFlow = ({ onFinish }) => {
       Math.round(Math.random() * (samples.length - 2))
     );
     setSelectedSampleIdx(nextSampleIdx);
+
+    setCurrentMapping(
+      Object.assign({}, currentMapping, {
+        audiosample: samples[nextSampleIdx]
+      })
+    );
     setMappings([...mappings, ...[currentMapping]]);
     selectBoxRef.current.init();
   };

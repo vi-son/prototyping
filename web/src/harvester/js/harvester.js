@@ -10,11 +10,14 @@ import AudioPlayer from "./AudioPlayer.js";
 import ShapeInput from "./ShapeInput.js";
 import FeelingsInput from "./FeelingsInput.js";
 import ColorInput from "./ColorInput.js";
+import Totem from "./Totem.js";
 
 const Harvester = () => {
   const [mappingJson, setMappingJson] = useState(undefined);
 
-  const exampleMapping = require("./example-mapping.json");
+  const exampleMapping = require("./audiosample-mapping.json");
+
+  return <Totem mapping={exampleMapping}></Totem>;
 
   return (
     <Router
