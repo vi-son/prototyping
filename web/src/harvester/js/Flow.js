@@ -86,7 +86,9 @@ const Flow = ({ onFinish }) => {
     setCurrentMapping(
       Object.assign({}, currentMapping, {
         sample: selectedSample,
-        group: selectedGroup
+        group: selectedGroup,
+        type: undefined,
+        mapping: undefined
       })
     );
     setUnmappedGroups(unmappedGroups.filter(e => e !== selectedGroup));
