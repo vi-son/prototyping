@@ -10,7 +10,7 @@ export default ({ mapping }) => {
   const canvasRef = useRef();
   const canvasWrapperRef = useRef();
 
-  const audioSamples = mapping.map(e => e.audiosample);
+  const audioSamples = mapping.map(e => e.sample);
 
   const colorMappings = mapping
     .filter(m => m.type === "color")

@@ -112,9 +112,13 @@ canvas:focus
   right: 0
   top: 30px
   background: black
-  color: white
   padding: 20px
   font-size: 11px
+  *
+    color: white !important
+  ol
+    li
+      color: white
   .mapping
     display: flex
     flex-direction: column
@@ -154,3 +158,12 @@ canvas:focus
 
 .finish-canvas-wrapper
   flex-grow: 1
+
+.buttons
+  position: fixed
+  display: flex
+  flex-direction: column
+  right: 5vw
+  bottom: 5vw
+  button
+    margin: 5px 0

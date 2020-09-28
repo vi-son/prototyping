@@ -5,13 +5,15 @@
   "main": "index.js",
   "scripts": {
     "dev": "npx parcel src/overview/index.html",
-    "build": "npx parcel build src/overview/index.html --out-dir public/"
+    "build": "npx parcel build src/overview/index.html --out-dir public/",
+    "dev:harvester": "npx parcel src/harvester/harvester.html"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@tweenjs/tween.js": "^18.6.0",
+    "blueimp-md5": "^2.18.0",
     "essentia": "^0.1.1",
     "essentia.js": "0.0.9",
     "glslify": "^7.0.0",

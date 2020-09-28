@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Link, useHistory } from "react-router-dom";
 
 import Layout from "./Layout.js";
@@ -8,138 +8,115 @@ import ColorInput from "./ColorInput.js";
 import FeelingsInput from "./FeelingsInput.js";
 import ShapeInput from "./ShapeInput.js";
 
-const RealFlow = ({ onFinish }) => {
+const Flow = ({ onFinish }) => {
   const history = useHistory();
-  const scenarioCount = 10;
   const fadeDuration = 1000;
   const audioPlayerRef = useRef();
   const selectBoxRef = useRef();
   const [backgroundColor, setBackgroundColor] = useState("var(--color-snow)");
   const [isColorReactive, setIsColorReactive] = useState(false);
   const [completedCount, setCompletedCount] = useState(0);
-  const [samples, setSamples] = useState([
-    // "aurora-20200829-bass01.mp3",
-    // "aurora-20200829-git01.mp3",
-    // "aurora-20200829-synth01.mp3",
-    // "dmutr_s01_pad-lo.mp3",
-    // "gig-teaser-20200829-bass01.mp3",
-    // "gig-teaser-20200829-beat01.mp3",
-    // "gig-teaser-20200829-synth01.mp3",
-    // "montez-20200829-git01.mp3",
-    // "montez-20200829-git02.mp3",
-    // "montez-20200829-keys01.mp3",
-    // "piano_s01_piano.mp3",
-    // "piano_s03_wind-pad.mp3",
-    // "shine-on_s01_arp.mp3",
-    // "shine-on_s02_horns.mp3",
-    // "shine-on_s03_km03.mp3",
-    // "shine-on_s04_brass-gm-d14.mp3",
-    // "shine-on_s06_git-bridge-01-triolen.mp3",
-    // "shine-on_s07_git-bridge-05-rev.mp3"
-    "montez-arrangement-20200926-90bpm-e-.wav.mp3",
-    "montez-sample-01-lead-synth.wav.mp3",
+  const [groups] = useState([
+    "synthesizer",
+    "guitar",
+    "chords",
+    "bass",
+    "rhythm"
+  ]);
+  const [scenarioCount] = useState(groups.length);
+  const [unmappedGroups, setUnmappedGroups] = useState(
+    Array.from(groups.values())
+  );
+
+  const [groupSamples] = useState(new Map());
+  groupSamples.set("synthesizer", ["montez-sample-01-lead-synth.wav.mp3"]);
+
+  groupSamples.set("guitar", [
     "montez-sample-02-main-git.wav.mp3",
+    "montez-sample-17-arp-git.wav.mp3"
+  ]);
+
+  groupSamples.set("chords", [
     "montez-sample-03-pad-01.wav.mp3",
     "montez-sample-04-pad-02.wav.mp3",
     "montez-sample-05-pad-03.wav.mp3",
+    "montez-sample-16-keys-02.wav.mp3",
+    "montez-sample-14-keys-01.wav.mp3"
+  ]);
+
+  groupSamples.set("bass", [
     "montez-sample-06-synth-bass-02.wav.mp3",
     "montez-sample-07-synth-bass-01.wav.mp3",
+    "montez-sample-18-e-bass-01.wav.mp3"
+  ]);
+
+  groupSamples.set("rhythm", [
     "montez-sample-08-e-perc-01.wav.mp3",
     "montez-sample-09-e-perc-02.wav.mp3",
     "montez-sample-10-e-drums-01.wav.mp3",
     "montez-sample-11-shaker.wav.mp3",
     "montez-sample-12-toms.wav.mp3",
-    "montez-sample-13-hh.wav.mp3",
-    "montez-sample-14-keys-01.wav.mp3",
-    "montez-sample-16-keys-02.wav.mp3",
-    "montez-sample-17-arp-git.wav.mp3",
-    "montez-sample-18-e-bass-01.wav.mp3"
+    "montez-sample-13-hh.wav.mp3"
   ]);
-  const [selectedSampleIdx, setSelectedSampleIdx] = useState(
-    Math.round(Math.random() * (samples.length - 1))
-  );
+
   const [seenSamples, setSeenSamples] = useState([]);
   const [currentMapping, setCurrentMapping] = useState({
-    audiosample: samples[selectedSampleIdx],
-    type: "none",
+    sample: "fallback.mp3",
+    group: undefined,
+    type: undefined,
     mapping: undefined
   });
   const [mappings, setMappings] = useState([]);
 
-  const moveToNextScenario = e => {
-    if (scenarioCount === completedCount) {
-      const downloadLink = document.createElement("a");
-      const dataStr =
-        "data:text/json;charset=utf-8," +
-        encodeURIComponent(JSON.stringify(mappings));
-      downloadLink.href = dataStr;
-      downloadLink.download = "result.json";
-      document.body.append(downloadLink);
-      downloadLink.click();
-      onFinish(JSON.stringify(mappings), history);
-      return;
-    }
-    setCompletedCount(completedCount + 1);
-    setSamples([
-      ...samples.slice(0, selectedSampleIdx),
-      ...samples.slice(selectedSampleIdx + 1)
-    ]);
-    setSeenSamples([...seenSamples, ...[samples[selectedSampleIdx]]]);
-    const nextSampleIdx = Math.min(
-      0,
-      Math.round(Math.random() * (samples.length - 2))
-    );
-    setSelectedSampleIdx(nextSampleIdx);
+  function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
 
+  const prepareNextScenario = () => {
+    const randomGroupIdx =
+      unmappedGroups.length > 1
+        ? getRandomInt(0, unmappedGroups.length - 1)
+        : 0;
+    const selectedGroup = unmappedGroups[randomGroupIdx];
+    const availableSamples = groupSamples.get(selectedGroup);
+    const randomSampleIdx = getRandomInt(0, availableSamples.length - 1);
+    const selectedSample = availableSamples[randomSampleIdx];
     setCurrentMapping(
       Object.assign({}, currentMapping, {
-        audiosample: samples[nextSampleIdx]
+        sample: selectedSample,
+        group: selectedGroup
       })
     );
-    setMappings([...mappings, ...[currentMapping]]);
+    setUnmappedGroups(unmappedGroups.filter(e => e !== selectedGroup));
+  };
+
+  const moveToNextScenario = e => {
+    setCompletedCount(completedCount + 1);
     selectBoxRef.current.init();
+    setMappings([...mappings, ...[currentMapping]]);
+    if (completedCount < scenarioCount - 1) {
+      prepareNextScenario();
+    }
   };
 
   const onRestartWorkflow = e => {
+    setUnmappedGroups(Array.from(groups.values()));
     setCompletedCount(0);
-    setSamples(seenSamples);
-    setSeenSamples([]);
+    prepareNextScenario();
   };
 
-  const updateMappings = () => {};
-
-  const samplePoolDebug = (
-    <div className="samples">
-      <div className="pool">
-        <h4>Sample Pool</h4>
-        <ol>
-          {samples.map((s, i) => (
-            <li key={i}>
-              {i}: {s}
-            </li>
-          ))}
-        </ol>
-      </div>
-      <div className="seen">
-        <h4>Already Played:</h4>
-        <ol>
-          {seenSamples.map((s, i) => (
-            <li key={i}>
-              {i}: {s}
-            </li>
-          ))}
-        </ol>
-      </div>
-      <b>Selected Index: {selectedSampleIdx}</b>
-    </div>
-  );
+  useEffect(() => {
+    prepareNextScenario();
+  }, []);
 
   const workflowLayout = (
     <main>
       <AudioPlayer
         ref={audioPlayerRef}
         fadeDuration={fadeDuration}
-        audiosrc={`/audio/samples/${samples[selectedSampleIdx]}`}
+        audiosrc={`/audio/harvester/${currentMapping.sample}`}
         onStopped={moveToNextScenario}
       />
       <SelectBox
@@ -177,23 +154,47 @@ const RealFlow = ({ onFinish }) => {
           }}
         />
       </SelectBox>
-      <button
-        className="next-sample"
-        onClick={() => audioPlayerRef.current.stopAudio()}
-      >
-        Next
-      </button>
+      {currentMapping.type !== undefined &&
+      currentMapping.mapping !== undefined ? (
+        <button
+          className="next-sample"
+          onClick={() => {
+            if (completedCount === scenarioCount) {
+              onFinish(JSON.stringify(mappings), history);
+              return;
+            }
+            audioPlayerRef.current.stopAudio();
+          }}
+        >
+          {completedCount === scenarioCount ? "Finish" : "Next"}
+        </button>
+      ) : (
+        <></>
+      )}
     </main>
   );
 
   const mappingDebug = (
     <div className="mappings">
+      <span>{completedCount}</span>
+      <hr />
+      <h5>Scenario count: {scenarioCount}</h5>
+      <span>
+        {currentMapping.sample} ({currentMapping.group})
+      </span>
+      <hr />
+      <ol>
+        {unmappedGroups.map((umg, i) => {
+          return <li key={i}>{umg}</li>;
+        })}
+      </ol>
+      <hr />
       {mappings.map((m, i) => {
         return (
           <small className="mapping" key={i}>
             <span>
               <b>sample: </b>
-              {m.audiosample}
+              {m.sample} ({m.group})
             </span>
             <span>
               <b>type: </b>
@@ -231,9 +232,9 @@ const RealFlow = ({ onFinish }) => {
           ></div>
         </div>
       </div>
-      {mappingDebug}
+      {/* {mappingDebug} */}
     </Layout>
   );
 };
 
-export default RealFlow;
+export default Flow;

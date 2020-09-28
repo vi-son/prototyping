@@ -76,6 +76,10 @@ class AudioPlayer extends React.Component {
     this.audio.src = this.props.audiosrc;
   }
 
+  componentWillReceiveProps(nextProps) {
+    this.audio.src = nextProps.audiosrc;
+  }
+
   stopAudio() {
     const steps = 10;
     const step = 1.0 / steps;
@@ -85,7 +89,7 @@ class AudioPlayer extends React.Component {
       if (this.state.volume < 0.0) {
         clearInterval(this.state.fadeInterval);
         this.audio.pause();
-        this.setState(state => ({ volume: 0 }));
+        this.setState(state => ({ volume: 0, playing: false, currentTime: 0 }));
         this.audio.volume = this.state.volume;
         this.audio.src = this.props.audiosrc;
         this.props.onStopped();
@@ -183,7 +187,7 @@ class AudioPlayer extends React.Component {
             ></polygon>
           </g>
         </svg>
-        {/* {debug} */}
+        {debug}
       </div>
     );
   }
