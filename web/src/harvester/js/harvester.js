@@ -15,7 +15,7 @@ import Totem from "./Totem.js";
 const Harvester = () => {
   const [mappingJson, setMappingJson] = useState(undefined);
 
-  const exampleMapping = require("./audiosample-mapping.json");
+  const exampleMapping = require("./montez.json");
 
   return <Totem mapping={exampleMapping}></Totem>;
 

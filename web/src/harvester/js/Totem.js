@@ -204,7 +204,7 @@ export default ({ mapping }) => {
       camera.add(listener);
       const sound = new THREE.PositionalAudio(listener);
       // load a sound and set it as the Audio object's buffer
-      audioLoader.load(`/audio/samples/${sample}`, function(buffer) {
+      audioLoader.load(`/audio/harvester/${sample}`, function(buffer) {
         sound.setBuffer(buffer);
         sound.setLoop(true);
         sound.setVolume(1.0);
