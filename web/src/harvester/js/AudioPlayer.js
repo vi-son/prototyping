@@ -77,7 +77,9 @@ class AudioPlayer extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    this.audio.src = nextProps.audiosrc;
+    if (!this.audio.src.includes(nextProps.audiosrc)) {
+      this.audio.src = nextProps.audiosrc;
+    }
   }
 
   stopAudio() {

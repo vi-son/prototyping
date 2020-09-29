@@ -29,39 +29,39 @@ const Flow = ({ onFinish }) => {
   );
 
   const [groupSamples] = useState(new Map());
-  groupSamples.set("synthesizer", ["montez-sample-01-lead-synth.wav.mp3"]);
+  groupSamples.set("synthesizer", ["montez-sample-01-lead-synth.mp3"]);
 
   groupSamples.set("guitar", [
-    "montez-sample-02-main-git.wav.mp3",
-    "montez-sample-17-arp-git.wav.mp3"
+    "montez-sample-02-main-git.mp3",
+    "montez-sample-17-arp-git.mp3"
   ]);
 
   groupSamples.set("chords", [
-    "montez-sample-03-pad-01.wav.mp3",
-    "montez-sample-04-pad-02.wav.mp3",
-    "montez-sample-05-pad-03.wav.mp3",
-    "montez-sample-16-keys-02.wav.mp3",
-    "montez-sample-14-keys-01.wav.mp3"
+    "montez-sample-03-pad-01.mp3",
+    "montez-sample-04-pad-02.mp3",
+    "montez-sample-05-pad-03.mp3",
+    "montez-sample-16-keys-02.mp3",
+    "montez-sample-14-keys-01.mp3"
   ]);
 
   groupSamples.set("bass", [
-    "montez-sample-06-synth-bass-02.wav.mp3",
-    "montez-sample-07-synth-bass-01.wav.mp3",
-    "montez-sample-18-e-bass-01.wav.mp3"
+    "montez-sample-06-synth-bass-02.mp3",
+    "montez-sample-07-synth-bass-01.mp3",
+    "montez-sample-18-e-bass-01.mp3"
   ]);
 
   groupSamples.set("rhythm", [
-    "montez-sample-08-e-perc-01.wav.mp3",
-    "montez-sample-09-e-perc-02.wav.mp3",
-    "montez-sample-10-e-drums-01.wav.mp3",
-    "montez-sample-11-shaker.wav.mp3",
-    "montez-sample-12-toms.wav.mp3",
-    "montez-sample-13-hh.wav.mp3"
+    "montez-sample-08-e-perc-01.mp3",
+    "montez-sample-09-e-perc-02.mp3",
+    "montez-sample-10-e-drums-01.mp3",
+    "montez-sample-11-shaker.mp3",
+    "montez-sample-12-toms.mp3",
+    "montez-sample-13-hh.mp3"
   ]);
 
   const [seenSamples, setSeenSamples] = useState([]);
   const [currentMapping, setCurrentMapping] = useState({
-    sample: "fallback.mp3",
+    sample: undefined,
     group: undefined,
     type: undefined,
     mapping: undefined
@@ -75,6 +75,7 @@ const Flow = ({ onFinish }) => {
   }
 
   const prepareNextScenario = () => {
+    setBackgroundColor("var(--color-snow)");
     const randomGroupIdx =
       unmappedGroups.length > 1
         ? getRandomInt(0, unmappedGroups.length - 1)
@@ -115,12 +116,16 @@ const Flow = ({ onFinish }) => {
 
   const workflowLayout = (
     <main>
-      <AudioPlayer
-        ref={audioPlayerRef}
-        fadeDuration={fadeDuration}
-        audiosrc={`/audio/harvester/${currentMapping.sample}`}
-        onStopped={moveToNextScenario}
-      />
+      {currentMapping.sample !== undefined ? (
+        <AudioPlayer
+          ref={audioPlayerRef}
+          fadeDuration={fadeDuration}
+          audiosrc={`/audio/harvester/${currentMapping.sample}`}
+          onStopped={moveToNextScenario}
+        />
+      ) : (
+        <></>
+      )}
       <SelectBox
         ref={selectBoxRef}
         options={["feeling", "color", "shape"]}
@@ -162,6 +167,7 @@ const Flow = ({ onFinish }) => {
           className="next-sample"
           onClick={() => {
             if (completedCount === scenarioCount) {
+              audioPlayerRef.current.stopAudio();
               onFinish(JSON.stringify(mappings), history);
               return;
             }

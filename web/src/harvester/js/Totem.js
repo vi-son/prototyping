@@ -172,7 +172,7 @@ export default ({ mapping }) => {
     });
     const tubeMesh = new THREE.Mesh(tubeGeometry, tubeMaterial);
     tubeMesh.frustumCulled = false;
-    scene.add(tubeMesh);
+    // scene.add(tubeMesh);
 
     // Camera
     // const camera = new THREE.OrthographicCamera(
@@ -197,19 +197,42 @@ export default ({ mapping }) => {
     controls.dampingFactor = 0.2;
 
     // Audio listener
-    const audioLoader = new THREE.AudioLoader();
+    const sounds = [];
+    const listener = new THREE.AudioListener();
+    camera.add(listener);
     audioSamples.map(sample => {
-      console.log(sample);
-      const listener = new THREE.AudioListener();
-      camera.add(listener);
+      const samplePath = `/audio/harvester/${sample}`;
+      console.log(samplePath);
       const sound = new THREE.PositionalAudio(listener);
+      var sphere = new THREE.SphereBufferGeometry();
+      var object = new THREE.Mesh(
+        sphere,
+        new THREE.MeshBasicMaterial(0xff0000)
+      );
+      var box = new THREE.Box3();
+      box.setFromCenterAndSize(
+        new THREE.Vector3(0, 0, 0),
+        new THREE.Vector3(0.1, 0.1, 0.1)
+      );
+      var helper = new THREE.Box3Helper(box, 0xffff00);
+      var group = new THREE.Group();
+      group.add(helper);
+      group.add(sound);
+      group.position.set(
+        2 * (Math.random() - 0.5),
+        2 * (Math.random() - 0.5),
+        2 * (Math.random() - 0.5)
+      );
+      scene.add(group);
       // load a sound and set it as the Audio object's buffer
-      audioLoader.load(`/audio/harvester/${sample}`, function(buffer) {
+      const audioLoader = new THREE.AudioLoader();
+      audioLoader.load(samplePath, function(buffer) {
         sound.setBuffer(buffer);
         sound.setLoop(true);
         sound.setVolume(1.0);
         sound.play();
       });
+      sounds.push(sound);
     });
 
     // Clock + timings
@@ -250,6 +273,13 @@ export default ({ mapping }) => {
       renderer.render(scene, camera);
     };
     render();
+
+    return () => {
+      sounds.forEach(s => {
+        console.log(s);
+        s.stop();
+      });
+    };
   }, []);
 
   return (
