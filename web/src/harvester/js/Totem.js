@@ -35,7 +35,8 @@ export default ({ mapping }) => {
     .map((m, i) => {
       return {
         index: i,
-        feeling: m.mapping
+        feeling: m.mapping,
+        sample: m.sample
       };
     });
 
@@ -55,6 +56,23 @@ export default ({ mapping }) => {
       alpha: true
     });
     renderer.setSize(size.width, size.height);
+    // Camera
+    var camera = new THREE.PerspectiveCamera(
+      45,
+      size.width / size.height,
+      0.01,
+      1000
+    );
+    var controls = new OrbitControls(camera, renderer.domElement);
+    camera.position.set(1.5, 1.5, 1.5);
+    controls.update();
+    controls.enableZoom = true;
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.2;
+    // Audio listener
+    const sounds = [];
+    const listener = new THREE.AudioListener();
+    camera.add(listener);
     // Light
     var light = new THREE.HemisphereLight(0xffffff, 0x666666, 3.75);
     light.position.set(0, 10, 0);
@@ -102,53 +120,17 @@ export default ({ mapping }) => {
       ),
       new THREE.Vector3(0, 1, 0)
     );
-    var points = curve.getPoints(50);
-    var curveGeometry = new THREE.BufferGeometry().setFromPoints(points);
-    var curveMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
-    var curveObject = new THREE.Line(curveGeometry, curveMaterial);
+
+    // var points = curve.getPoints(50);
+    // var curveGeometry = new THREE.BufferGeometry().setFromPoints(points);
+    // var curveMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
+    // var curveObject = new THREE.Line(curveGeometry, curveMaterial);
     // curveObject.position.set(0, -0.5, 0);
     // scene.add(curveObject);
 
-    // Spheres
-    feelingMappings.map(m => {
-      var sphereGeometry = new THREE.SphereBufferGeometry(0.1, 32, 12);
-      var sphereMaterial = new THREE.MeshPhongMaterial({
-        color: 0x0332b3,
-        flatShading: true
-      });
-      var sphere = new THREE.Mesh(sphereGeometry, colorMaterial);
-      sphere.position.set(
-        m.feeling.point.x,
-        m.feeling.point.y,
-        m.feeling.point.z
-      );
-      // scene.add(sphere);
-      var curve = new THREE.QuadraticBezierCurve3(
-        new THREE.Vector3(0, -0.5, 0),
-        new THREE.Vector3(m.feeling.point.x, 0, m.feeling.point.z),
-        sphere.position
-      );
-      var points = curve.getPoints(50);
-      var geometry = new THREE.BufferGeometry().setFromPoints(points);
-      var curveToFeeling = new THREE.Line(geometry, curveMaterial);
-      // scene.add(curveToFeeling);
-    });
-
-    // Geometry
-    // var sphereGeometry = new THREE.SphereBufferGeometry(1, 32, 12);
-    // var sphereMaterial = new THREE.MeshPhongMaterial({
-    //   color: 0x0332b3,
-    //   flatShading: true
-    // });
-    // sphereMaterial.depthTest = false;
-    // var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-    // sphere.position.set(0, 0, 0);
-    // scene.add(sphere);
-
-    //// TUBES
+    // Tube material
     const numSides = 8;
-    const subdivisions = 200;
-    const tubeGeometry = createLineGeometry(numSides, subdivisions);
+    const subdivisions = 50;
     const tubeMaterial = new THREE.RawShaderMaterial({
       vertexShader: require("../glsl/tubes.vert.glsl"),
       fragmentShader: require("../glsl/tubes.frag.glsl"),
@@ -165,43 +147,42 @@ export default ({ mapping }) => {
           type: "vec2",
           value: new THREE.Vector2(size.width, size.height)
         },
-        uThickness: { type: "f", value: 0.1 },
+        uThickness: { type: "f", value: 0.005 },
         uTime: { type: "f", value: 2.5 },
-        uRadialSegments: { type: "f", value: numSides }
+        uRadialSegments: { type: "f", value: numSides },
+        uPoints: {
+          type: "a",
+          value: [
+            new THREE.Vector3(0, -1, 0),
+            new THREE.Vector3(0, 0, 0),
+            new THREE.Vector3(0, 1, 0)
+          ]
+        }
       }
     });
-    const tubeMesh = new THREE.Mesh(tubeGeometry, tubeMaterial);
-    tubeMesh.frustumCulled = false;
-    // scene.add(tubeMesh);
 
-    // Camera
-    // const camera = new THREE.OrthographicCamera(
-    //   size.width / -100,
-    //   size.width / +100,
-    //   size.width / +100,
-    //   size.width / -100,
-    //   0.1,
-    //   100
-    // );
-    var camera = new THREE.PerspectiveCamera(
-      45,
-      size.width / size.height,
-      0.01,
-      1000
-    );
-    var controls = new OrbitControls(camera, renderer.domElement);
-    camera.position.set(1.5, 1.5, 1.5);
-    controls.update();
-    controls.enableZoom = true;
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.2;
+    // Spheres
+    const feelingGroup = new THREE.Group();
+    feelingMappings.map(m => {
+      var sphereGeometry = new THREE.SphereBufferGeometry(0.05, 32, 12);
+      var sphereMaterial = new THREE.MeshPhongMaterial({
+        color: 0x0332b3,
+        flatShading: true
+      });
+      var sphere = new THREE.Mesh(sphereGeometry, colorMaterial);
+      const loc = new THREE.Vector3(
+        m.feeling.point.x,
+        m.feeling.point.y,
+        m.feeling.point.z
+      );
+      sphere.position.set(
+        m.feeling.point.x,
+        m.feeling.point.y,
+        m.feeling.point.z
+      );
+      scene.add(sphere);
 
-    // Audio listener
-    const sounds = [];
-    const listener = new THREE.AudioListener();
-    camera.add(listener);
-    audioSamples.map(sample => {
-      const samplePath = `/audio/harvester/${sample}`;
+      const samplePath = `/audio/harvester/${m.sample}`;
       console.log(samplePath);
       const sound = new THREE.PositionalAudio(listener);
       var sphere = new THREE.SphereBufferGeometry();
@@ -210,19 +191,12 @@ export default ({ mapping }) => {
         new THREE.MeshBasicMaterial(0xff0000)
       );
       var box = new THREE.Box3();
-      box.setFromCenterAndSize(
-        new THREE.Vector3(0, 0, 0),
-        new THREE.Vector3(0.1, 0.1, 0.1)
-      );
-      var helper = new THREE.Box3Helper(box, 0xffff00);
+      box.setFromCenterAndSize(loc, new THREE.Vector3(0.1, 0.1, 0.1));
+      var helper = new THREE.Box3Helper(box, 0xff0000);
       var group = new THREE.Group();
       group.add(helper);
       group.add(sound);
-      group.position.set(
-        2 * (Math.random() - 0.5),
-        2 * (Math.random() - 0.5),
-        2 * (Math.random() - 0.5)
-      );
+      // group.position.set(loc);
       scene.add(group);
       // load a sound and set it as the Audio object's buffer
       const audioLoader = new THREE.AudioLoader();
@@ -233,7 +207,44 @@ export default ({ mapping }) => {
         sound.play();
       });
       sounds.push(sound);
+
+      const tubeGeometry = createLineGeometry(numSides, subdivisions);
+      const instTubeMaterial = tubeMaterial.clone();
+      instTubeMaterial.uniforms.uPoints.value = [
+        new THREE.Vector3(0, -0.5, 0),
+        new THREE.Vector3(m.feeling.point.x, 0, m.feeling.point.z),
+        loc
+      ];
+      const tubeMesh = new THREE.Mesh(tubeGeometry, instTubeMaterial);
+      tubeMesh.frustumCulled = false;
+      feelingGroup.add(tubeMesh);
     });
+    scene.add(feelingGroup);
+
+    // Geometry
+    // var sphereGeometry = new THREE.SphereBufferGeometry(1, 32, 12);
+    // var sphereMaterial = new THREE.MeshPhongMaterial({
+    //   color: 0x0332b3,
+    //   flatShading: true
+    // });
+    // sphereMaterial.depthTest = false;
+    // var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+    // sphere.position.set(0, 0, 0);
+    // scene.add(sphere);
+
+    //// TUBES
+    // Camera
+    // const camera = new THREE.OrthographicCamera(
+    //   size.width / -100,
+    //   size.width / +100,
+    //   size.width / +100,
+    //   size.width / -100,
+    //   0.1,
+    //   100
+    // );
+
+    // audioSamples.map(sample => {
+    // });
 
     // Clock + timings
     var clock = new THREE.Clock();
@@ -267,7 +278,9 @@ export default ({ mapping }) => {
     var render = function() {
       requestAnimationFrame(render);
       time = clock.getElapsedTime();
-      tubeMaterial.uniforms.uTime.value = time;
+      feelingGroup.children.forEach(f => {
+        f.material.uniforms.uTime.value = time;
+      });
       renderer.clear();
       renderer.render(backgroundPlane, backgroundCamera);
       renderer.render(scene, camera);

@@ -2,9 +2,9 @@
 
 uniform vec2 uResolution;
 
-void main() {
-  vec2 uv = gl_FragCoord.xy / uResolution;
-  // vec3 color = pillow()
+varying vec3 vViewPosition;
 
-  gl_FragColor = vec4(uv, 0.0, 1.0);
+void main() {
+  float d = vViewPosition.x;
+  gl_FragColor = vec4(vec3(d), 1.0);
 }

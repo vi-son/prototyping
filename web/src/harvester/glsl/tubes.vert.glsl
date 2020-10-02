@@ -12,6 +12,7 @@ uniform float index;
 uniform float uRadialSegments;
 uniform float animateRadius;
 uniform float animateStrength;
+uniform vec3 uPoints[3];
 
 varying vec2 vUv;
 varying vec3 vViewPosition;
@@ -41,10 +42,21 @@ vec3 sample (float t) {
   // float phi = sin(index * 2.0 + beta * 8.0 + noise);
   // return spherical(r, 0.0, theta);
 
-  float x = t - 0.5;
-  float y = sin(t * PI + uTime);
-  float z = cos(t * PI + uTime);
-  return vec3(x, y, z);
+  vec3 start = uPoints[0];
+  vec3 ctrl = uPoints[1];
+  vec3 end = uPoints[2];
+  vec3 i =
+    start * pow((1.0 - t), 2.0) +
+    ctrl * 2.0 * (1.0 - t) * t +
+    end * pow(t, 2.0);
+    
+  float x = t;
+  float y = 0.01;
+  float z = 0.01;
+  vec3 interp = mix(start, end, t);
+  i.z = sin(t * PI + end.z * 10.0 + uTime) / 10.0;
+  i.x = cos(t * PI + end.x * 10.0 + uTime) / 10.0;
+  return i;
 }
 
 
@@ -83,6 +95,7 @@ void main() {
   createTube(t, volume, transformed, objectNormal);
 
   vec4 mvPosition = modelViewMatrix * vec4(transformed, 1.0);
+  vViewPosition = vec3(t, 0, 0);
 
   gl_Position = projectionMatrix * mvPosition;
 }
