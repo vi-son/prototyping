@@ -17,7 +17,7 @@ const Harvester = () => {
 
   const exampleMapping = require("./montez.json");
 
-  return <Totem mapping={exampleMapping}></Totem>;
+  // return <Totem mapping={exampleMapping}></Totem>;
 
   return (
     <Router
