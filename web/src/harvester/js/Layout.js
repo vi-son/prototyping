@@ -6,8 +6,7 @@ function Layout({ children, style }) {
     <div className="harvester" style={style}>
       <div className="titlebar">
         <Link className="link" to="/">
-          <h3>harvester 2.0</h3>
-          <h5>Mapping Audio/X</h5>
+          <h3>audiovis i/o</h3>
         </Link>
       </div>
       <main>{children}</main>

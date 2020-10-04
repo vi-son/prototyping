@@ -11,7 +11,7 @@ function Start() {
           <img src="/img/harvester.png" />
         </div>
         <div className="right">
-          <h2>Welcome</h2>
+          <h2>Willkommen</h2>
           <article>
             Herzlich willkommen, du bist im Begriff Kunst zu machen. In den
             nächsten Minuten kannst du uns helfen, kreativ zu sein. Kreativität
