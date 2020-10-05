@@ -6,5 +6,5 @@ varying vec3 vViewPosition;
 
 void main() {
   float d = vViewPosition.x;
-  gl_FragColor = vec4(vec3(d), 1.0);
+  gl_FragColor = vec4(vec3(0.0), 1.0);
 }

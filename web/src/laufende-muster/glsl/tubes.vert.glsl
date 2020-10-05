@@ -54,8 +54,8 @@ vec3 sample (float t) {
   float y = 0.01;
   float z = 0.01;
   vec3 interp = mix(start, end, t);
-  i.z = sin(t * PI + end.z * 10.0 + uTime) / 10.0;
-  i.x = cos(t * PI + end.x * 10.0 + uTime) / 10.0;
+  // i.z = sin(t * PI + end.z * 10.0 + uTime) / 10.0;
+  // i.x = cos(t * PI + end.x * 10.0 + uTime) / 10.0;
   return i;
 }
 
@@ -88,7 +88,7 @@ void createTube (float t, vec2 volume, out vec3 offset, out vec3 normal) {
 void main() {
   // Remap from [-0.5, 0.5] to [0, 1]
   float t = (position * 2.0) * 0.5 + 0.5;
-  vec2 volume = vec2(uThickness * (sin(t * PI) + 1.0));
+  vec2 volume = vec2(uThickness);
 
   vec3 transformed;
   vec3 objectNormal;
