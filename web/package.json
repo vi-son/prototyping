@@ -20,7 +20,8 @@
     "pex-cam": "^2.7.1",
     "primitive-cube": "^2.0.1",
     "react-router-dom": "^5.2.0",
-    "three": "^0.119.1",
+    "three": "^0.121.1",
+    "three-quaternion-from-normal": "^1.0.0",
     "tween.js": "^16.6.0",
     "vue": "^2.6.11"
   },

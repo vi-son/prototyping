@@ -12,7 +12,7 @@ uniform float index;
 uniform float uRadialSegments;
 uniform float animateRadius;
 uniform float animateStrength;
-uniform vec3 uPoints[3];
+uniform vec3 uPoints[4];
 
 varying vec2 vUv;
 varying vec3 vViewPosition;
@@ -32,30 +32,17 @@ vec3 spherical (float r, float phi, float theta) {
 
 // Creates an animated torus knot
 vec3 sample (float t) {
-  // float beta = t * PI;
-  // // float ripple = ease(sin(t * 2.0 * PI + time) * 0.5 + 0.5) * 0.5;
-  // float noise = time + index * 8.0;
-  // // animate radius on click
-  // float radiusAnimation = animateRadius * animateStrength * 0.25;
-  // float r = sin(index * 0.75 + beta * 2.0) * (0.75 + radiusAnimation);
-  // float theta = 4.0 * beta + index * 0.25;
-  // float phi = sin(index * 2.0 + beta * 8.0 + noise);
-  // return spherical(r, 0.0, theta);
-
   vec3 start = uPoints[0];
-  vec3 ctrl = uPoints[1];
-  vec3 end = uPoints[2];
+  vec3 ctrlA = uPoints[1];
+  vec3 ctrlB = uPoints[2];
+  vec3 end = uPoints[3];
+
   vec3 i =
-    start * pow((1.0 - t), 2.0) +
-    ctrl * 2.0 * (1.0 - t) * t +
-    end * pow(t, 2.0);
-    
-  float x = t;
-  float y = 0.01;
-  float z = 0.01;
-  vec3 interp = mix(start, end, t);
-  // i.z = sin(t * PI + end.z * 10.0 + uTime) / 10.0;
-  // i.x = cos(t * PI + end.x * 10.0 + uTime) / 10.0;
+    start * pow((1.0 - t), 3.0) +
+    ctrlA * 3.0 * pow(1.0 - t, 2.0) * t +
+    ctrlB * 3.0 * (1.0 - t) * pow(t, 2.0) +
+    end * pow(t, 3.0);
+
   return i;
 }
 
