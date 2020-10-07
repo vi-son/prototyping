@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
@@ -10,6 +10,12 @@ import "../sass/laufende-muster.sass";
 const App = () => {
   const canvasWrapperRef = useRef();
   const canvasRef = useRef();
+  const [freq, setFreq] = useState();
+
+  const remap = (v, a, b, c, d) => {
+    const newval = ((v - a) / (b - a)) * (d - c) + c;
+    return newval;
+  };
 
   const calculateFrame = (start, ctrlA, ctrlB, end, t) => {
     // find next sample along curve
@@ -40,6 +46,9 @@ const App = () => {
 
   useEffect(() => {
     const size = canvasWrapperRef.current.getBoundingClientRect();
+    const clock = new THREE.Clock();
+    let $t = clock.getElapsedTime();
+    let $f = 0;
 
     // Scene
     const scene = new THREE.Scene();
@@ -186,34 +195,30 @@ const App = () => {
     var sound = new THREE.Audio(audioListener);
     // load a sound and set it as the Audio object's buffer
     var audioLoader = new THREE.AudioLoader();
+    let audioDuration = 0;
+    let audioPlayProgress = 0;
     audioLoader.load(
       "/audio/patterns.202006.mp3",
       function(buffer) {
-        console.log(audioListener);
+        audioDuration = buffer.duration;
         sound.setBuffer(buffer);
         sound.setLoop(false);
         sound.setVolume(1.0);
-        // sound.play();
+        sound.play();
       },
       function(xhr) {
         console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
       }
     );
+
     // Audio analyze
     var analyser = new THREE.AudioAnalyser(sound, 32);
-    // get the average frequency of the sound
-    var data = analyser.getAverageFrequency();
+    let data = 0;
+    let freqData = analyser.getFrequencyData();
+    let threshold = 100;
 
-    // Normals
-    var samplePosition = sample(
-      startPoint,
-      startHandle.position,
-      endHandle.position,
-      endPoint,
-      0.5
-    );
-    var geometry = new THREE.PlaneBufferGeometry(0.02, 0.5, 1);
-    const planeMaterial = new THREE.ShaderMaterial({
+    const patternGroup = new THREE.Group();
+    const patternMaterial = new THREE.ShaderMaterial({
       vertexShader: require("../glsl/basic.vert.glsl"),
       fragmentShader: require("../glsl/plane.frag.glsl"),
       uniforms: {
@@ -223,12 +228,84 @@ const App = () => {
       transparent: true,
       depthWrite: false
     });
-    const planeGroup = new THREE.Group();
-    scene.add(planeGroup);
-    planeGroup.position.copy(samplePosition);
-    var plane = new THREE.Mesh(geometry, planeMaterial);
-    planeGroup.add(plane);
-    plane.position.set(0, 0.25, 0);
+
+    // Audio debug helper
+    const audioFreqHelper = [];
+    const audioFreqHelperMaterial = new THREE.MeshBasicMaterial({
+      color: 0x000000,
+      side: THREE.DoubleSide
+    });
+    freqData.map((_, i) => {
+      var geometry = new THREE.PlaneBufferGeometry(0.1, 1, 1);
+      var freqHelperQuad = new THREE.Mesh(geometry, audioFreqHelperMaterial);
+      audioFreqHelper.push(freqHelperQuad);
+      freqHelperQuad.position.set(-0.5 + i * 0.11, 0, 1);
+      scene.add(freqHelperQuad);
+    });
+
+    function processAudio() {
+      // get the average frequency of the sound
+      freqData = analyser.getFrequencyData();
+      setFreq([...freqData]);
+      var samplePosition = sample(
+        startPoint,
+        startHandle.position,
+        endHandle.position,
+        endPoint,
+        audioPlayProgress
+      );
+      const [normal, bitangent, tangent] = calculateFrame(
+        startPoint,
+        startHandle.position,
+        endHandle.position,
+        endPoint,
+        audioPlayProgress
+      );
+      for (var i = 0; i < freqData.length; i++) {
+        audioFreqHelper[i].scale.set(1, freqData[i] / 100.0, 1);
+      }
+      if ($f % 60 === 0) {
+        data = freqData[7];
+        if (data > threshold) {
+          const size = remap(data, 0, 100, 0.0, 0.2);
+          var patternGeometry = new THREE.PlaneBufferGeometry(0.03, size, 1);
+          const newPatternGroup = new THREE.Group();
+          scene.add(newPatternGroup);
+          newPatternGroup.position.copy(samplePosition);
+          const pattern = new THREE.Mesh(patternGeometry, patternMaterial);
+          newPatternGroup.add(pattern);
+          pattern.position.set(0, size / 2.0, 0);
+          const q = quaternionFromNormal(normal);
+          newPatternGroup.quaternion.copy(q);
+        }
+      }
+    }
+
+    // Normals
+    var samplePosition = sample(
+      startPoint,
+      startHandle.position,
+      endHandle.position,
+      endPoint,
+      0.5
+    );
+    // var planeGeometry = new THREE.PlaneBufferGeometry(0.02, 0.5, 1);
+    // const planeMaterial = new THREE.ShaderMaterial({
+    //   vertexShader: require("../glsl/basic.vert.glsl"),
+    //   fragmentShader: require("../glsl/plane.frag.glsl"),
+    //   uniforms: {
+    //     uColor: { value: new THREE.Vector3(1, 0, 0) }
+    //   },
+    //   side: THREE.DoubleSide,
+    //   transparent: true,
+    //   depthWrite: false
+    // });
+    // const planeGroup = new THREE.Group();
+    // scene.add(planeGroup);
+    // planeGroup.position.copy(samplePosition);
+    // var plane = new THREE.Mesh(geometry, planeMaterial);
+    // planeGroup.add(plane);
+    // plane.position.set(0, 0.25, 0);
 
     // Raycasting
     var raycaster = new THREE.Raycaster();
@@ -289,38 +366,38 @@ const App = () => {
     }
 
     let angle = 0;
-    function updatePlane(t) {
-      // Update normals
-      const samplePosition = sample(
-        startPoint,
-        startHandle.position,
-        endHandle.position,
-        endPoint,
-        t
-      );
-      const [normal, bitangent, tangent] = calculateFrame(
-        startPoint,
-        startHandle.position,
-        endHandle.position,
-        endPoint,
-        t
-      );
-      // arrowHelper.position.copy(samplePosition);
-      // arrowHelper.setDirection(normal);
-      planeGroup.position.copy(samplePosition);
-      const quaternionN = quaternionFromNormal(normal);
-      const quaternionT = quaternionFromNormal(tangent);
-      planeGroup.quaternion.copy(quaternionN);
-      // planeGroup.rotateOnAxis(bitangent, 90.0);
-      angle += 0.001;
-    }
+    // function updatePlane(t) {
+    //   // Update normals
+    //   const samplePosition = sample(
+    //     startPoint,
+    //     startHandle.position,
+    //     endHandle.position,
+    //     endPoint,
+    //     t
+    //   );
+    //   const [normal, bitangent, tangent] = calculateFrame(
+    //     startPoint,
+    //     startHandle.position,
+    //     endHandle.position,
+    //     endPoint,
+    //     t
+    //   );
+    //   // arrowHelper.position.copy(samplePosition);
+    //   // arrowHelper.setDirection(normal);
+    //   planeGroup.position.copy(samplePosition);
+    //   const quaternionN = quaternionFromNormal(normal);
+    //   const quaternionT = quaternionFromNormal(tangent);
+    //   planeGroup.quaternion.copy(quaternionN);
+    //   // planeGroup.rotateOnAxis(bitangent, 90.0);
+    //   angle += 0.001;
+    // }
 
     // Render loop
-    const clock = new THREE.Clock();
     function render() {
+      $t = clock.getElapsedTime();
       requestAnimationFrame(render);
 
-      updatePlane((clock.getElapsedTime() / 10.0) % 1.0);
+      // updatePlane(audioPlayProgress);
 
       renderer.clear();
       renderer.render(backgroundScene, backgroundCamera);
@@ -341,12 +418,14 @@ const App = () => {
       endHandleLine.geometry.attributes.position.array[5] =
         endHandle.position.z;
       endHandleLine.geometry.attributes.position.needsUpdate = true;
+
       // Calculate audio things
       if (sound.isPlaying) {
-        // console.log(audioListener._clock.elapasedTime / audioListener._clock);
-        // currentTime = listener.context.currentTime - audioStartTime;
-        // t = currentTime;
+        const t = audioListener.context.currentTime;
+        audioPlayProgress = t / audioDuration;
       }
+      processAudio();
+      $f++;
     }
     render();
 
@@ -357,6 +436,15 @@ const App = () => {
 
   return (
     <>
+      <div className="freq-row">
+        {freq !== undefined ? (
+          freq.map((f, i) => {
+            return <b key={i}>{f}</b>;
+          })
+        ) : (
+          <></>
+        )}
+      </div>
       <div className="canvas-wrapper" ref={canvasWrapperRef}>
         <canvas ref={canvasRef}></canvas>
       </div>

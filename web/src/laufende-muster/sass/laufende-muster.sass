@@ -1,3 +1,5 @@
+@import ../../shared/sass/rouge/1-settings/_colors.sass
+
 .canvas-wrapper
   width: 100vw
   height: 100vh
@@ -11,3 +13,18 @@
   position: fixed
   right: 40px
   bottom: 40px
+
+.freq-row
+  color: black
+  z-index: 999
+  position: fixed
+  top: 100px
+  left: 100px
+  font-family: monospace
+  margin: 0 auto
+  b
+    margin-right: 10px
+    width: 5ch
+    display: inline-block
+    &:nth-child(2n)
+      color: var(--color-curacao)
