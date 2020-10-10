@@ -17,8 +17,6 @@ const Harvester = () => {
 
   const exampleMapping = require("./montez.json");
 
-  // return <Totem mapping={exampleMapping}></Totem>;
-
   return (
     <Router
       basename={
@@ -30,7 +28,6 @@ const Harvester = () => {
       <Switch>
         <Route exact path="/">
           <Start />
-          {/* <Finish mappingJson={JSON.stringify(exampleMapping)} /> */}
         </Route>
         <Route path="/flow">
           <Flow

@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@svgr/parcel-plugin-svgr": "^5.4.0",
     "@tweenjs/tween.js": "^18.6.0",
     "blueimp-md5": "^2.18.0",
     "essentia": "^0.1.1",

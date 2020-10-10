@@ -1,15 +1,17 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-function Layout({ children, style }) {
+import "../sass/Layout.AudiovisIO.sass";
+
+function Layout({ children, style, className }) {
   return (
-    <div className="harvester" style={style}>
-      <div className="titlebar">
-        <Link className="link" to="/">
-          <h3>audiovis i/o</h3>
-        </Link>
-      </div>
-      <main>{children}</main>
+    <div className={className} style={style}>
+      {/* <div className="titlebar"> */}
+      {/*   <Link className="link" to="/"> */}
+      {/*     <h3>audiovis i/o</h3> */}
+      {/*   </Link> */}
+      {/* </div> */}
+      {children}
     </div>
   );
 }

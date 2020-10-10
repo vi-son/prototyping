@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64px" height="64px" viewBox="0 0 64 64" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>audiovisio/color</title>
+    <g id="audiovisio/color" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" transform="translate(15.000000, 16.000000)">
+            <circle id="Oval" fill="#68EC90" style="mix-blend-mode: lighten;" cx="17.5" cy="10.5" r="10.5"></circle>
+            <circle id="Oval-Copy" fill="#3A6EEB" style="mix-blend-mode: lighten;" cx="10.5" cy="21.5" r="10.5"></circle>
+            <circle id="Oval-Copy-2" fill="#EA5475" style="mix-blend-mode: lighten;" cx="23.5" cy="21.5" r="10.5"></circle>
+        </g>
+    </g>
+</svg>

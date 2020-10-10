@@ -1,12 +1,18 @@
 import React, { useRef, useState, useEffect } from "react";
 import { Link, useHistory } from "react-router-dom";
-
+// Local imports
 import Layout from "./Layout.js";
 import AudioPlayer from "./AudioPlayer.js";
 import SelectBox from "./SelectBox.js";
 import ColorInput from "./ColorInput.js";
 import FeelingsInput from "./FeelingsInput.js";
 import ShapeInput from "./ShapeInput.js";
+import Progressbar from "./Progressbar.js";
+import IconColor from "../../../assets/svg/audiovisio/color.svg";
+import IconFeeling from "../../../assets/svg/audiovisio/feeling.svg";
+import IconShape from "../../../assets/svg/audiovisio/shape.svg";
+// Style imports
+import "../sass/Flow.sass";
 
 const Flow = ({ onFinish }) => {
   const history = useHistory();
@@ -115,67 +121,88 @@ const Flow = ({ onFinish }) => {
   }, []);
 
   const workflowLayout = (
-    <main>
-      {currentMapping.sample !== undefined ? (
-        <AudioPlayer
-          ref={audioPlayerRef}
-          fadeDuration={fadeDuration}
-          audiosrc={`/audio/harvester/${currentMapping.sample}`}
-          onStopped={moveToNextScenario}
-        />
-      ) : (
-        <></>
-      )}
-      <SelectBox
-        ref={selectBoxRef}
-        options={["feeling", "color", "shape"]}
-        onIndexChange={(i, name) => {
-          i === 1 ? setIsColorReactive(true) : setIsColorReactive(false);
-          setCurrentMapping(Object.assign({}, currentMapping, { type: name }));
-        }}
-      >
-        <FeelingsInput
-          onSelect={(feeling, point) => {
+    <main className="flow">
+      <div className="left">
+        <div className="description">
+          <h3>1. Audio</h3>
+          <article>Spiel das Audiosample ab</article>
+        </div>
+        {currentMapping.sample !== undefined ? (
+          <AudioPlayer
+            ref={audioPlayerRef}
+            fadeDuration={fadeDuration}
+            audiosrc={`/audio/harvester/${currentMapping.sample}`}
+            onStopped={moveToNextScenario}
+          />
+        ) : (
+          <></>
+        )}
+        <div className="empty"></div>
+      </div>
+      <div className="right">
+        <SelectBox
+          ref={selectBoxRef}
+          options={["Gefühl", "Farbe", "Form"]}
+          icons={[<IconFeeling />, <IconColor />, <IconShape />]}
+          onIndexChange={(i, name) => {
+            i === 1 ? setIsColorReactive(true) : setIsColorReactive(false);
             setCurrentMapping(
-              Object.assign({}, currentMapping, {
-                mapping: { feeling: feeling, point: point }
-              })
+              Object.assign({}, currentMapping, { type: name })
             );
-          }}
-        />
-        <ColorInput
-          onChange={(s, r, g, b) => {
-            setBackgroundColor(s);
-          }}
-          onSelect={(r, g, b) => {
-            setCurrentMapping(
-              Object.assign({}, currentMapping, { mapping: [r, g, b] })
-            );
-          }}
-        />
-        <ShapeInput
-          onSelect={shape => {
-            setCurrentMapping(
-              Object.assign({}, currentMapping, { mapping: shape })
-            );
-          }}
-        />
-      </SelectBox>
-      {currentMapping.type !== undefined &&
-      currentMapping.mapping !== undefined ? (
-        <button
-          className="next-sample"
-          onClick={() => {
-            if (completedCount === scenarioCount) {
-              audioPlayerRef.current.stopAudio();
-              onFinish(JSON.stringify(mappings), history);
-              return;
-            }
-            audioPlayerRef.current.stopAudio();
           }}
         >
-          {completedCount === scenarioCount ? "Finish" : "Next"}
-        </button>
+          <FeelingsInput
+            onSelect={(feeling, point) => {
+              setBackgroundColor("var(--color-snow)");
+              setCurrentMapping(
+                Object.assign({}, currentMapping, {
+                  mapping: { feeling: feeling, point: point }
+                })
+              );
+            }}
+          />
+          <ColorInput
+            onChange={(s, r, g, b) => {
+              setBackgroundColor(s);
+            }}
+            onSelect={(r, g, b) => {
+              setCurrentMapping(
+                Object.assign({}, currentMapping, { mapping: [r, g, b] })
+              );
+            }}
+          />
+          <ShapeInput
+            onSelect={shape => {
+              setBackgroundColor("var(--color-snow)");
+              setCurrentMapping(
+                Object.assign({}, currentMapping, { mapping: shape })
+              );
+            }}
+          />
+        </SelectBox>
+      </div>
+
+      {currentMapping.type !== undefined &&
+      currentMapping.mapping !== undefined ? (
+        <div className="button-wrapper">
+          <div className="description">
+            <h4>3. Fortschritt</h4>
+            <article>Zum nächsten Schritt</article>
+          </div>
+          <button
+            className="next-sample"
+            onClick={() => {
+              if (completedCount === scenarioCount) {
+                audioPlayerRef.current.stopAudio();
+                onFinish(JSON.stringify(mappings), history);
+                return;
+              }
+              audioPlayerRef.current.stopAudio();
+            }}
+          >
+            {completedCount === scenarioCount ? "Finish" : "Weiter"}
+          </button>
+        </div>
       ) : (
         <></>
       )}
@@ -220,26 +247,19 @@ const Flow = ({ onFinish }) => {
 
   return (
     <Layout
-      className="harvester"
+      className="audiovis-io"
       style={{
         backgroundColor: isColorReactive ? backgroundColor : `currentColor`
       }}
     >
       {workflowLayout}
-      <div className="progressbar">
-        <div
-          className="completed-text"
-          style={{ width: `${(completedCount / scenarioCount) * 100}vw` }}
-        >
-          {completedCount} <span className="divider">/</span> {scenarioCount}
-        </div>
-        <div className="bar">
-          <div
-            className="completed"
-            style={{ width: `${(completedCount / scenarioCount) * 100}vw` }}
-          ></div>
-        </div>
-      </div>
+
+      <Progressbar
+        percent={(completedCount / scenarioCount) * 100}
+        completedCount={completedCount}
+        scenarioCount={scenarioCount}
+      />
+
       {/* {mappingDebug} */}
     </Layout>
   );

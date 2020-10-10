@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64px" height="64px" viewBox="0 0 64 64" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>audiovisio/shape</title>
+    <g id="audiovisio/shape" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group-4" transform="translate(10.000000, 16.000000)">
+            <g id="Group">
+                <g id="Group-3" transform="translate(8.000000, 0.427009)">
+                    <polygon id="Path" fill="#D1F6EA" points="12.6844396 1.0658141e-14 -3.55271368e-15 20.4717898 12.6844396 28.072331"></polygon>
+                    <polygon id="Path" fill="#609084" transform="translate(19.097787, 14.036165) scale(-1, 1) translate(-19.097787, -14.036165) " points="25.5111348 -8.8817842e-15 12.6844396 20.5658928 25.5111348 28.072331"></polygon>
+                </g>
+                <circle id="Oval" fill="#C06D80" cx="9" cy="23.5" r="8.5"></circle>
+            </g>
+            <g id="Group-2" transform="translate(34.500000, 21.500000) scale(-1, 1) rotate(-270.000000) translate(-34.500000, -21.500000) translate(25.500000, 12.000000)">
+                <polygon id="Rectangle" fill="#D5F2FF" points="-1.41553436e-14 0 5 6 5 19 -1.41553436e-14 13"></polygon>
+                <polygon id="Rectangle" fill="#A6DBF8" transform="translate(9.000000, 3.000000) scale(1, -1) rotate(-270.000000) translate(-9.000000, -3.000000) " points="6 -6 12 -1 12 12 6.39373873 7.3281156 6 7"></polygon>
+                <rect id="Rectangle" fill="#5B6D8B" x="5" y="6" width="13" height="13"></rect>
+            </g>
+        </g>
+    </g>
+</svg>

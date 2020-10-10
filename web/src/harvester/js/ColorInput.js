@@ -7,6 +7,7 @@ import "../sass/ColorInput.sass";
 
 export default ({ onChange, onSelect }) => {
   const canvasRef = useRef();
+  const canvasWrapperRef = useRef();
   const [hue, setHue] = useState(128);
   const [saturation, setSaturation] = useState(60);
   const [brightness, setBrightness] = useState(97);
@@ -19,7 +20,7 @@ export default ({ onChange, onSelect }) => {
   };
 
   useEffect(() => {
-    const size = canvasRef.current.getBoundingClientRect();
+    const size = canvasWrapperRef.current.getBoundingClientRect();
     // Scene
     const scene = new THREE.Scene();
     // Renderer
@@ -28,6 +29,7 @@ export default ({ onChange, onSelect }) => {
       antialias: 1,
       alpha: true
     });
+    renderer.setSize(size.width, size.height);
     // Light
     var light = new THREE.HemisphereLight(0xffffff, 0x666666, 2.75);
     light.position.set(0, 10, 0);
@@ -70,13 +72,14 @@ export default ({ onChange, onSelect }) => {
     const camera = new THREE.OrthographicCamera(
       size.width / -500,
       size.width / +500,
-      size.width / +500,
-      size.width / -500,
+      size.height / +500,
+      size.height / -500,
       -10,
       100
     );
     var controls = new OrbitControls(camera, renderer.domElement);
     camera.position.set(1, 1, 1);
+    controls.target.set(0, 0.25, 0);
     controls.update();
     controls.enableZoom = false;
     controls.enableDamping = true;
@@ -93,13 +96,13 @@ export default ({ onChange, onSelect }) => {
       if (e.buttons !== 0) mouseDown = true;
       else mouseDown = false;
     }
-    canvasRef.current.addEventListener("mousemove", onMouseMove, false);
+    canvasRef.current.addEventListener("pointermove", onMouseMove, false);
     let clientX, clientY;
     function onMouseDown(e) {
       clientX = e.clientX;
       clientY = e.clientY;
     }
-    canvasRef.current.addEventListener("mousedown", onMouseDown, false);
+    canvasRef.current.addEventListener("pointerdown", onMouseDown, false);
 
     // var arrowHelper = new THREE.ArrowHelper(
     //   new THREE.Vector3(0, 0, 0),
@@ -151,7 +154,14 @@ export default ({ onChange, onSelect }) => {
         }
       }
     }
-    canvasRef.current.addEventListener("mouseup", onMouseUp);
+    canvasRef.current.addEventListener("pointerup", onMouseUp);
+
+    function onWindowResize() {
+      size = canvas.current.getBoundingClientRect();
+      camera.updateProjectionMatrix();
+      renderer.setSize(size.width, size.height);
+    }
+    window.addEventListener("resize", onWindowResize, false);
 
     function onUpdate() {
       raycaster.setFromCamera(mousePosition, camera);
@@ -175,70 +185,15 @@ export default ({ onChange, onSelect }) => {
   return (
     <div className="color-input">
       <div className="color-name">
-        <h5>Selection:</h5>
-        <h3 className="selected-color" style={{ display: "none" }}>
-          <span className="red">{r}</span>
-          <b>•</b>
-          <span className="green">{g}</span>
-          <b>•</b>
-          <span className="blue">{b}</span>
-        </h3>
+        <h5>Auswahl</h5>
         <div
           className="color-swatch"
           style={{ backgroundColor: `rgb(${r}, ${g}, ${b})` }}
         ></div>
       </div>
-      <div className="canvas-wrapper">
-        <canvas
-          width="600"
-          height="600"
-          ref={canvasRef}
-          onClick={handleClick}
-        ></canvas>
+      <div className="canvas-wrapper" ref={canvasWrapperRef}>
+        <canvas ref={canvasRef} onClick={handleClick}></canvas>
       </div>
     </div>
   );
 };
-
-/*
-<div className="fallback-input">
-  <span>
-    hsl({hue}, {saturation}%, {brightness}%)
-  </span>
-  <div className="sliders">
-    <input
-      name="hue"
-      type="range"
-      min="0"
-      max="360"
-      defaultValue={hue}
-      onChange={e => {
-        setHue(e.target.value);
-        reactOnChange();
-      }}
-    />
-    <input
-      name="saturation"
-      type="range"
-      min="0"
-      max="100"
-      defaultValue={saturation}
-      onChange={e => {
-        setSaturation(e.target.value);
-        reactOnChange();
-      }}
-    />
-    <input
-      name="brightness"
-      type="range"
-      min="25"
-      max="100"
-      defaultValue={brightness}
-      onChange={e => {
-        setBrightness(e.target.value);
-        reactOnChange();
-      }}
-    />
-  </div>
-</div>;
-*/

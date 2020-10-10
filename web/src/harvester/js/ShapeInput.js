@@ -2,13 +2,13 @@ import React, { useRef, useState, useEffect } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
+import "../sass/ShapeInput.sass";
+
 export default ({ onSelect }) => {
   const canvasRef = useRef();
   const [selectedShape, setSelectedShape] = useState("");
 
   useEffect(() => {
-    // onChange(`hsl(${hue}, ${saturation}%, ${brightness}%)`);
-
     const size = canvasRef.current.getBoundingClientRect();
     // Scene
     const scene = new THREE.Scene();
@@ -18,6 +18,8 @@ export default ({ onSelect }) => {
       antialias: 1,
       alpha: true
     });
+    renderer.setSize(size.width, size.height);
+
     // Light
     var light = new THREE.HemisphereLight(0xffffff, 0x666666, 2.75);
     light.position.set(0, 10, 0);
@@ -66,15 +68,17 @@ export default ({ onSelect }) => {
     scene.add(group);
 
     // Camera
+    const aspect = size.width / size.height;
     const camera = new THREE.OrthographicCamera(
       size.width / -500,
       size.width / +500,
-      size.width / +500,
-      size.width / -500,
+      size.height / +500,
+      size.height / -500,
       0.1,
       100
     );
     var controls = new OrbitControls(camera, renderer.domElement);
+    controls.target.set(0, 0.33, 0);
     camera.position.set(0, 3, 5);
     controls.enableZoom = false;
     controls.enablePan = false;
@@ -91,7 +95,7 @@ export default ({ onSelect }) => {
       mousePosition.x = ((e.clientX - size.x) / size.width) * 2 - 1;
       mousePosition.y = -((e.clientY - size.y) / size.height) * 2 + 1;
     }
-    canvasRef.current.addEventListener("mousemove", onMouseMove);
+    canvasRef.current.addEventListener("pointermove", onMouseMove);
 
     let selectedShape = "";
 
@@ -114,6 +118,13 @@ export default ({ onSelect }) => {
         setSelectedShape(hit[0].object.name);
       }
     }
+
+    function onWindowResize() {
+      size = canvas.current.getBoundingClientRect();
+      camera.updateProjectionMatrix();
+      renderer.setSize(size.width, size.height);
+    }
+    window.addEventListener("resize", onWindowResize, false);
 
     const clock = new THREE.Clock(true);
     let t;
@@ -138,9 +149,12 @@ export default ({ onSelect }) => {
 
   return (
     <div className="shape-input">
-      <h3>{selectedShape}</h3>
+      <div className="shape-name">
+        <h5>Auswahl</h5>
+        <h3>{selectedShape}</h3>
+      </div>
       <div className="canvas-wrapper">
-        <canvas width="600" height="600" ref={canvasRef}></canvas>
+        <canvas ref={canvasRef}></canvas>
       </div>
     </div>
   );

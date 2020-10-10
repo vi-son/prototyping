@@ -189,7 +189,6 @@ class AudioPlayer extends React.Component {
             ></polygon>
           </g>
         </svg>
-        {debug}
       </div>
     );
   }

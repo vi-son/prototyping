@@ -1,0 +1,33 @@
+@import ../../shared/sass/rouge/1-settings/_colors.sass
+
+.progressbar
+  display: flex
+  position: fixed
+  bottom: 0
+  flex-direction: column
+  justify-content: space-between
+  color: var(--color-darkness)
+  .completed-text-wrapper
+    width: 100vw
+    padding: 0 2vw
+  .completed-text
+    font-weight: 300
+    display: flex
+    padding: 10px
+    justify-content: flex-end
+    transition: width 500ms ease
+    .divider
+      color: var(--color-curacao)
+      margin: 0 3px
+      font-weight: bold
+  .bar
+    height: 30px
+    width: 100vw
+    background: var(--color-darkness-30)
+    position: relative
+    .completed
+      position: absolute
+      width: 0
+      height: 30px
+      background: var(--color-ultradark-30)
+      transition: width 500ms ease

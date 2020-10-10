@@ -1,0 +1,35 @@
+.flow
+  display: grid
+  grid-template-columns: 2fr 5fr
+  .left
+    margin-bottom: 80px
+    display: flex
+    flex-grow: 1
+    flex-direction: column
+    justify-content: space-between
+    align-items: center
+    .description
+      text-align: center
+      margin-top: 10vh
+      h3,
+      article
+        color: var(--color-darkness)
+    .empty
+      height: 50vh
+  .right
+    margin-bottom: 80px
+
+.button-wrapper
+  position: fixed
+  right: 5vw
+  bottom: 5vw
+  display: flex
+  flex-direction: column
+  .description
+    article,
+    h4
+      color: var(--color-darkness)
+  .next-sample
+    background: var(--color-curacao)
+    color: var(--color-snow)
+    transition: background 200ms ease

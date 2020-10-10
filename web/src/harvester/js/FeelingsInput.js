@@ -25,14 +25,14 @@ export default ({ onSelect }) => {
   const [newGeometry, setNewGeometry] = useState(new THREE.BufferGeometry());
 
   const feelings = [
-    ["vigilance", "anticipation", "interest"],
-    ["ecstasy", "joy", "serenity"],
-    ["admiration", "trust", "acceptance"],
-    ["terror", "fear", "apprehension"],
-    ["amazement", "surprise", "distraction"],
-    ["grief", "sadness", "pensiveness"],
-    ["loathing", "disgust", "boredom"],
-    ["rage", "anger", "annoyance"]
+    ["klar", "aufkmersam", "neugierig"],
+    ["begeisternd", "froh", "gelassen"],
+    ["bewundernd", "vertrauend", "akzeptierend"],
+    ["erschreckend", "beängstigend", "besorgend"],
+    ["erstaunend", "überraschend", "verwirrend"],
+    ["betrübend", "traurig", "nachdenklich"],
+    ["angewiedernd", "ablehnend", "langweilend"],
+    ["wütend", "verärgernd", "reizend"]
   ];
   const feelingMap = new Map();
 
@@ -62,8 +62,8 @@ export default ({ onSelect }) => {
     var camera = new THREE.OrthographicCamera(
       size.width / -400,
       size.width / +400,
-      size.width / +400,
-      size.width / -400,
+      size.height / +400,
+      size.height / -400,
       0.01,
       100
     );
@@ -72,7 +72,7 @@ export default ({ onSelect }) => {
       canvas: canvas.current,
       alpha: true
     });
-    // var geometry = new THREE.BoxGeometry(1, 1, 1);
+    renderer.setSize(size.width, size.height);
     feelings.map((row, i) => {
       var geometry = new THREE.BufferGeometry();
       const vert = [];
@@ -147,7 +147,8 @@ export default ({ onSelect }) => {
     );
     scene.add(directionalLight);
     var controls = new OrbitControls(camera, renderer.domElement);
-    camera.position.set(1, 1, 1);
+    controls.target.set(0, -0.5, 0);
+    camera.position.set(1, 0.25, 1);
     controls.update();
     controls.enableZoom = false;
 
@@ -191,14 +192,14 @@ export default ({ onSelect }) => {
       mousePosition.x = ((e.clientX - size.x) / size.width) * 2 - 1;
       mousePosition.y = -((e.clientY - size.y) / size.height) * 2 + 1;
     }
-    canvas.current.addEventListener("mousemove", onMouseMove);
+    canvas.current.addEventListener("pointermove", onMouseMove);
 
     let clientX, clientY;
     function onMouseDown(e) {
       clientX = e.clientX;
       clientY = e.clientY;
     }
-    canvas.current.addEventListener("mousedown", onMouseDown, false);
+    canvas.current.addEventListener("pointerdown", onMouseDown, false);
 
     // var arrowHelper = new THREE.ArrowHelper(
     //   new THREE.Vector3(0, 0, 0),
@@ -251,7 +252,7 @@ export default ({ onSelect }) => {
         }
       }
     }
-    canvas.current.addEventListener("mouseup", onMouseUp);
+    canvas.current.addEventListener("pointerup", onMouseUp);
 
     function onWindowResize() {
       size = canvas.current.getBoundingClientRect();
@@ -272,20 +273,20 @@ export default ({ onSelect }) => {
   return (
     <div className="feelings-input">
       <div className="canvas-wrapper">
-        {feeling.length > 0 ? (
-          <div className="selected-feeling">
-            <h5>Selection:</h5>
+        <div className="selected-feeling">
+          <h5>Auswahl</h5>
+          {feeling.length > 0 ? (
             <h3 className="feeling-name">{feeling}</h3>
-          </div>
-        ) : (
-          <></>
-        )}
+          ) : (
+            <></>
+          )}
+        </div>
         {hoverFeeling.length > 0 ? (
           <h4 className="hover-feeling">{hoverFeeling}</h4>
         ) : (
           <></>
         )}
-        <canvas width="600" height="600" ref={canvas}></canvas>
+        <canvas ref={canvas}></canvas>
       </div>
     </div>
   );
