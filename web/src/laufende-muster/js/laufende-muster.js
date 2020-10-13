@@ -10,7 +10,10 @@ import "../sass/laufende-muster.sass";
 const App = () => {
   const canvasWrapperRef = useRef();
   const canvasRef = useRef();
-  const [freq, setFreq] = useState();
+  const [freqData, setFreqData] = useState(
+    Array.from({ length: 5 }, () => Array.from({ length: 32 }, () => null))
+  );
+  const [progress, setProgress] = useState(0);
 
   const remap = (v, a, b, c, d) => {
     const newval = ((v - a) / (b - a)) * (d - c) + c;
@@ -189,34 +192,50 @@ const App = () => {
     scene.add(tubeMesh);
 
     // Audio
+    var loadingManager = new THREE.LoadingManager();
+
     var audioListener = new THREE.AudioListener();
     camera.add(audioListener);
     // create a global audio source
-    var sound = new THREE.Audio(audioListener);
     // load a sound and set it as the Audio object's buffer
-    var audioLoader = new THREE.AudioLoader();
+    var audioLoader = new THREE.AudioLoader(loadingManager);
     let audioDuration = 0;
     let audioPlayProgress = 0;
-    audioLoader.load(
-      "/audio/patterns.202006.mp3",
-      function(buffer) {
-        audioDuration = buffer.duration;
-        sound.setBuffer(buffer);
-        sound.setLoop(false);
-        sound.setVolume(1.0);
-        sound.play();
-      },
-      function(xhr) {
-        console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
-      }
-    );
+    const audioTracks = [
+      "patterns-20201008-inst-01-perc.mp3",
+      "patterns-20201008-inst-02-pads-&-chords.mp3",
+      "patterns-20201008-inst-03-gits-&-outro.mp3",
+      "patterns-20201008-inst-04-bass.mp3",
+      "patterns-20201008-inst-05-voice-&-synth.mp3"
+    ];
+    const sounds = new Array(audioTracks.length)
+      .fill(undefined)
+      .map(() => new THREE.Audio(audioListener));
+    audioTracks.map((track, i) => {
+      audioLoader.load(
+        `/audio/laufende-muster/${track}`,
+        function(buffer) {
+          audioDuration = buffer.duration;
+          sounds[i].setBuffer(buffer);
+          sounds[i].setLoop(false);
+          sounds[i].setVolume(1.0);
+          sounds[i].play();
+        },
+        function(xhr) {
+          console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
+        }
+      );
+    });
 
     // Audio analyze
-    var analyser = new THREE.AudioAnalyser(sound, 32);
-    let data = 0;
-    let freqData = analyser.getFrequencyData();
-    let threshold = 100;
-
+    // Audio debug helper
+    const audioFreqHelperArray = new Array(audioTracks.length)
+      .fill(0)
+      .map(_ => new Array(32).fill(undefined));
+    const audioFreqHelperMaterial = new THREE.MeshBasicMaterial({
+      color: 0x000000,
+      side: THREE.DoubleSide
+    });
     const patternGroup = new THREE.Group();
     const patternMaterial = new THREE.ShaderMaterial({
       vertexShader: require("../glsl/basic.vert.glsl"),
@@ -228,57 +247,73 @@ const App = () => {
       transparent: true,
       depthWrite: false
     });
+    // After loading all sounds
+    let allLoaded = false;
+    var analysers = new Array(audioTracks.length).fill(undefined);
+    loadingManager.onLoad = () => {
+      sounds.forEach((s, i) => {
+        const analyzer = new THREE.AudioAnalyser(s, 32);
+        analysers[i] = analyzer;
+        let freqData = analysers[i].getFrequencyData();
+        freqData.map((f, j) => {
+          var geometry = new THREE.PlaneBufferGeometry(0.1, 1, 1);
+          var freqHelperQuad = new THREE.Mesh(
+            geometry,
+            audioFreqHelperMaterial
+          );
+          audioFreqHelperArray[i][j] = freqHelperQuad;
+          freqHelperQuad.position.set(-0.5 + j * 0.11, 0, 1 * i);
+          scene.add(freqHelperQuad);
+        });
+      });
 
-    // Audio debug helper
-    const audioFreqHelper = [];
-    const audioFreqHelperMaterial = new THREE.MeshBasicMaterial({
-      color: 0x000000,
-      side: THREE.DoubleSide
-    });
-    freqData.map((_, i) => {
-      var geometry = new THREE.PlaneBufferGeometry(0.1, 1, 1);
-      var freqHelperQuad = new THREE.Mesh(geometry, audioFreqHelperMaterial);
-      audioFreqHelper.push(freqHelperQuad);
-      freqHelperQuad.position.set(-0.5 + i * 0.11, 0, 1);
-      scene.add(freqHelperQuad);
-    });
+      allLoaded = true;
+    };
 
     function processAudio() {
       // get the average frequency of the sound
-      freqData = analyser.getFrequencyData();
-      setFreq([...freqData]);
-      var samplePosition = sample(
-        startPoint,
-        startHandle.position,
-        endHandle.position,
-        endPoint,
-        audioPlayProgress
-      );
-      const [normal, bitangent, tangent] = calculateFrame(
-        startPoint,
-        startHandle.position,
-        endHandle.position,
-        endPoint,
-        audioPlayProgress
-      );
-      for (var i = 0; i < freqData.length; i++) {
-        audioFreqHelper[i].scale.set(1, freqData[i] / 100.0, 1);
-      }
-      if ($f % 60 === 0) {
-        data = freqData[7];
-        if (data > threshold) {
-          const size = remap(data, 0, 100, 0.0, 0.2);
-          var patternGeometry = new THREE.PlaneBufferGeometry(0.03, size, 1);
-          const newPatternGroup = new THREE.Group();
-          scene.add(newPatternGroup);
-          newPatternGroup.position.copy(samplePosition);
-          const pattern = new THREE.Mesh(patternGeometry, patternMaterial);
-          newPatternGroup.add(pattern);
-          pattern.position.set(0, size / 2.0, 0);
-          const q = quaternionFromNormal(normal);
-          newPatternGroup.quaternion.copy(q);
+      let copy = [...freqData];
+      analysers.forEach((a, i) => {
+        const freqData = a.getFrequencyData();
+        // const freqData = analysers.map((a, i) => a.getFrequencyData());
+        setFreqData();
+        let data = 0;
+        let threshold = 100;
+        var samplePosition = sample(
+          startPoint,
+          startHandle.position,
+          endHandle.position,
+          endPoint,
+          audioPlayProgress
+        );
+        const [normal, bitangent, tangent] = calculateFrame(
+          startPoint,
+          startHandle.position,
+          endHandle.position,
+          endPoint,
+          audioPlayProgress
+        );
+        for (var j = 0; j < freqData.length; j++) {
+          audioFreqHelperArray[i][j].scale.set(1, freqData[j] / 100.0, 1);
+          copy[i][j] = freqData[j];
         }
-      }
+        // if ($f % 60 === 0) {
+        //   data = freqData[7];
+        //   if (data > threshold) {
+        //     const size = remap(data, 0, 100, 0.0, 0.2);
+        //     var patternGeometry = new THREE.PlaneBufferGeometry(0.03, size, 1);
+        //     const newPatternGroup = new THREE.Group();
+        //     scene.add(newPatternGroup);
+        //     newPatternGroup.position.copy(samplePosition);
+        //     const pattern = new THREE.Mesh(patternGeometry, patternMaterial);
+        //     newPatternGroup.add(pattern);
+        //     pattern.position.set(0, size / 2.0, 0);
+        //     const q = quaternionFromNormal(normal);
+        //     newPatternGroup.quaternion.copy(q);
+        //   }
+        // }
+      });
+      setFreqData(copy);
     }
 
     // Normals
@@ -420,11 +455,15 @@ const App = () => {
       endHandleLine.geometry.attributes.position.needsUpdate = true;
 
       // Calculate audio things
-      if (sound.isPlaying) {
-        const t = audioListener.context.currentTime;
-        audioPlayProgress = t / audioDuration;
+      // if (allLoaded && sounds.length > 0 && sounds[0].isPlaying) {
+      //   const t = audioListener.context.currentTime;
+      //   audioPlayProgress = t / audioDuration;
+      //   setProgress(audioPlayProgress);
+      //   processAudio();
+      // }
+      if (allLoaded) {
+        processAudio();
       }
-      processAudio();
       $f++;
     }
     render();
@@ -437,9 +476,17 @@ const App = () => {
   return (
     <>
       <div className="freq-row">
-        {freq !== undefined ? (
-          freq.map((f, i) => {
-            return <b key={i}>{f}</b>;
+        {progress !== undefined ? <span>{progress} %</span> : ""}
+        {freqData !== undefined ? (
+          freqData.map((f, i) => {
+            const row = f.map((v, j) => {
+              return <b key={`${i}${j}`}>{v}</b>;
+            });
+            return (
+              <div key={i} className="row">
+                {row}
+              </div>
+            );
           })
         ) : (
           <></>

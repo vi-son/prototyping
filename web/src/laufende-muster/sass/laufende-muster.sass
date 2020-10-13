@@ -22,9 +22,13 @@
   left: 100px
   font-family: monospace
   margin: 0 auto
-  b
-    margin-right: 10px
-    width: 5ch
-    display: inline-block
-    &:nth-child(2n)
-      color: var(--color-curacao)
+  display: flex
+  flex-direction: column
+  .row
+    display: flex
+    b
+      margin-right: 10px
+      width: 5ch
+      display: inline-block
+      &:nth-child(2n)
+        color: var(--color-curacao)
