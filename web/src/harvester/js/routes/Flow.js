@@ -1,18 +1,20 @@
+// node_modules imports
 import React, { useRef, useState, useEffect } from "react";
 import { Link, useHistory } from "react-router-dom";
 // Local imports
-import Layout from "./Layout.js";
-import AudioPlayer from "./AudioPlayer.js";
-import SelectBox from "./SelectBox.js";
-import ColorInput from "./ColorInput.js";
-import FeelingsInput from "./FeelingsInput.js";
-import ShapeInput from "./ShapeInput.js";
-import Progressbar from "./Progressbar.js";
-import IconColor from "../../../assets/svg/audiovisio/color.svg";
-import IconFeeling from "../../../assets/svg/audiovisio/feeling.svg";
-import IconShape from "../../../assets/svg/audiovisio/shape.svg";
+import Layout from "../Layout.js";
+import AudioPlayer from "../components/AudioPlayer.js";
+import SelectBox from "../components/SelectBox.js";
+import ColorInput from "../components/ColorInput.js";
+import FeelingsInput from "../components/FeelingsInput.js";
+import ShapeInput from "../components/ShapeInput.js";
+import Progressbar from "../components/Progressbar.js";
+// SVG imports
+import IconColor from "../../../../assets/svg/audiovisio/color.svg";
+import IconFeeling from "../../../../assets/svg/audiovisio/feeling.svg";
+import IconShape from "../../../../assets/svg/audiovisio/shape.svg";
 // Style imports
-import "../sass/Flow.sass";
+import "../../sass/Flow.sass";
 
 const Flow = ({ onFinish }) => {
   const history = useHistory();
@@ -103,11 +105,7 @@ const Flow = ({ onFinish }) => {
 
   const moveToNextScenario = e => {
     setCompletedCount(completedCount + 1);
-    selectBoxRef.current.init();
     setMappings([...mappings, ...[currentMapping]]);
-    if (completedCount < scenarioCount - 1) {
-      prepareNextScenario();
-    }
   };
 
   const onRestartWorkflow = e => {
@@ -119,6 +117,17 @@ const Flow = ({ onFinish }) => {
   useEffect(() => {
     prepareNextScenario();
   }, []);
+
+  useEffect(() => {
+    if (completedCount === scenarioCount) {
+      onFinish(JSON.stringify(mappings), history);
+    } else {
+      selectBoxRef.current.init();
+      if (completedCount < scenarioCount - 1) {
+        prepareNextScenario();
+      }
+    }
+  }, [completedCount]);
 
   const workflowLayout = (
     <main className="flow">
@@ -252,7 +261,7 @@ const Flow = ({ onFinish }) => {
         backgroundColor: isColorReactive ? backgroundColor : `currentColor`
       }}
     >
-      {workflowLayout}
+      {completedCount !== scenarioCount ? workflowLayout : <></>}
 
       <Progressbar
         percent={(completedCount / scenarioCount) * 100}

@@ -1,21 +1,16 @@
+// node_modules imports
 import React, { useState, useRef } from "react";
 import ReactDOM from "react-dom";
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
-
-import Flow from "./Flow.js";
-import Layout from "./Layout.js";
-import Start from "./Start.js";
-import Finish from "./Finish.js";
-import AudioPlayer from "./AudioPlayer.js";
-import ShapeInput from "./ShapeInput.js";
-import FeelingsInput from "./FeelingsInput.js";
-import ColorInput from "./ColorInput.js";
-import Totem from "./Totem.js";
+// Local imports: Routes
+import Flow from "./routes/Flow.js";
+import Start from "./routes/Start.js";
+import Finish from "./routes/Finish.js";
 
 const Harvester = () => {
   const [mappingJson, setMappingJson] = useState(undefined);
 
-  const exampleMapping = require("./montez.json");
+  const exampleMapping = require("../json/montez.json");
 
   return (
     <Router

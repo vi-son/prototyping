@@ -1,0 +1,29 @@
+@import ../../shared/sass/rouge/1-settings/_colors.sass
+
+.finish
+  display: grid
+  height: 100vh
+  grid-template-columns: 40% 60%
+  .textblock
+    padding: 60px
+    color: var(--color-darkness)
+    .title
+      margin-bottom: 40px
+
+  .totem
+    background: var(--color-ultradark)
+
+  .buttons
+    position: fixed
+    left: 40px
+    width: 30%
+    button
+      transition: background 500ms ease
+      background: var(--color-curacao)
+      color: var(--color-snow)
+      &:hover
+        background: var(--color-darkness)
+
+
+.finish-canvas-wrapper
+  flex-grow: 1

@@ -1,8 +1,9 @@
+// node_modules imports
 import React, { useRef, useState, useEffect } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-
-import "../sass/ShapeInput.sass";
+// Style imports
+import "../../sass/ShapeInput.sass";
 
 export default ({ onSelect }) => {
   const canvasRef = useRef();
@@ -30,32 +31,32 @@ export default ({ onSelect }) => {
     // Cube
     const cubeGeometry = new THREE.BoxGeometry(0.4, 0.4, 0.4);
     const cube = new THREE.Mesh(cubeGeometry, material.clone());
-    cube.name = "Cube";
+    cube.name = "Würfel";
     // Sphere
     const sphereGeometry = new THREE.SphereBufferGeometry(0.26, 32, 32);
     const sphere = new THREE.Mesh(sphereGeometry, material.clone());
     sphere.position.set(-0.75, 0, 0);
-    sphere.name = "Sphere";
+    sphere.name = "Kugel";
     // Cone
     const coneGeometry = new THREE.ConeGeometry(0.2, 0.5, 30);
     const cone = new THREE.Mesh(coneGeometry, material.clone());
     cone.position.set(0.75, 0, 0);
-    cone.name = "Cone";
+    cone.name = "Kegel";
     // Cylinder
     var cylinderGeometry = new THREE.CylinderGeometry(0.2, 0.2, 0.5, 32);
     var cylinder = new THREE.Mesh(cylinderGeometry, material.clone());
     cylinder.position.set(-0.75, 0.75, 0);
-    cylinder.name = "Cylinder";
+    cylinder.name = "Zylinder";
     // Icosahedron
     var icosahedronGeometry = new THREE.IcosahedronGeometry(0.25, 0);
     var icosahedron = new THREE.Mesh(icosahedronGeometry, material.clone());
     icosahedron.position.set(0.0, 0.75, 0);
-    icosahedron.name = "Icosahedron";
+    icosahedron.name = "Ikosaeder";
     // Octahedron
     var octahedronGeometry = new THREE.OctahedronGeometry(0.25, 0);
     var octahedron = new THREE.Mesh(octahedronGeometry, material.clone());
     octahedron.position.set(0.75, 0.75, 0);
-    octahedron.name = "Octahedron";
+    octahedron.name = "Oktaeder";
 
     const group = new THREE.Group();
     group.add(sphere);
@@ -95,7 +96,10 @@ export default ({ onSelect }) => {
       mousePosition.x = ((e.clientX - size.x) / size.width) * 2 - 1;
       mousePosition.y = -((e.clientY - size.y) / size.height) * 2 + 1;
     }
-    canvasRef.current.addEventListener("pointermove", onMouseMove);
+    const pointerMoveHandler = canvasRef.current.addEventListener(
+      "pointermove",
+      onMouseMove
+    );
 
     let selectedShape = "";
 
@@ -108,7 +112,7 @@ export default ({ onSelect }) => {
         if (onSelect) onSelect(hit[0].object.name);
       }
     }
-    canvasRef.current.addEventListener("click", onClick);
+    const clickHandler = canvasRef.current.addEventListener("click", onClick);
 
     function onUpdate() {
       raycaster.setFromCamera(mousePosition, camera);
@@ -124,7 +128,11 @@ export default ({ onSelect }) => {
       camera.updateProjectionMatrix();
       renderer.setSize(size.width, size.height);
     }
-    window.addEventListener("resize", onWindowResize, false);
+    const resizeHandler = window.addEventListener(
+      "resize",
+      onWindowResize,
+      false
+    );
 
     const clock = new THREE.Clock(true);
     let t;
@@ -145,6 +153,12 @@ export default ({ onSelect }) => {
       renderer.render(scene, camera);
     };
     render();
+
+    return () => {
+      window.removeEventListener("resize", resizeHandler);
+      canvasRef.current.removeEventListener("click", clickHandler);
+      canvasRef.current.removeEventListener("pointermove", pointerMoveHandler);
+    };
   }, []);
 
   return (

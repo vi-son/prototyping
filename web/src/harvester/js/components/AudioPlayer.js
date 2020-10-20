@@ -1,6 +1,7 @@
+// node_modules imports
 import React from "react";
-
-import "../sass/AudioPlayer.sass";
+// Style imports
+import "../../sass/AudioPlayer.sass";
 
 class AudioPlayer extends React.Component {
   constructor(props) {

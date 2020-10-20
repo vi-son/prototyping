@@ -1,9 +1,10 @@
+// node_modules imports
 import React, { useState, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import TWEEN from "@tweenjs/tween.js";
-
-import "../sass/ColorInput.sass";
+// Style imports
+import "../../sass/ColorInput.sass";
 
 export default ({ onChange, onSelect }) => {
   const canvasRef = useRef();
@@ -38,8 +39,8 @@ export default ({ onChange, onSelect }) => {
     const geometry = new THREE.BoxGeometry(1, 1, 1);
     const material = new THREE.ShaderMaterial({
       uniforms: {},
-      vertexShader: require("../glsl/colorcube.vert.glsl"),
-      fragmentShader: require("../glsl/colorcube.frag.glsl")
+      vertexShader: require("../../glsl/colorcube.vert.glsl"),
+      fragmentShader: require("../../glsl/colorcube.frag.glsl")
     });
 
     const cube = new THREE.Mesh(geometry, material);
@@ -96,13 +97,21 @@ export default ({ onChange, onSelect }) => {
       if (e.buttons !== 0) mouseDown = true;
       else mouseDown = false;
     }
-    canvasRef.current.addEventListener("pointermove", onMouseMove, false);
+    const pointerMoveHandler = canvasRef.current.addEventListener(
+      "pointermove",
+      onMouseMove,
+      false
+    );
     let clientX, clientY;
     function onMouseDown(e) {
       clientX = e.clientX;
       clientY = e.clientY;
     }
-    canvasRef.current.addEventListener("pointerdown", onMouseDown, false);
+    const pointerDownHandler = canvasRef.current.addEventListener(
+      "pointerdown",
+      onMouseDown,
+      false
+    );
 
     // var arrowHelper = new THREE.ArrowHelper(
     //   new THREE.Vector3(0, 0, 0),
@@ -154,14 +163,21 @@ export default ({ onChange, onSelect }) => {
         }
       }
     }
-    canvasRef.current.addEventListener("pointerup", onMouseUp);
+    const pointerUpHandler = canvasRef.current.addEventListener(
+      "pointerup",
+      onMouseUp
+    );
 
     function onWindowResize() {
       size = canvas.current.getBoundingClientRect();
       camera.updateProjectionMatrix();
       renderer.setSize(size.width, size.height);
     }
-    window.addEventListener("resize", onWindowResize, false);
+    const resizeHandler = window.addEventListener(
+      "resize",
+      onWindowResize,
+      false
+    );
 
     function onUpdate() {
       raycaster.setFromCamera(mousePosition, camera);
@@ -180,6 +196,13 @@ export default ({ onChange, onSelect }) => {
       renderer.render(scene, camera);
     };
     render();
+
+    return () => {
+      window.removeEventListener("resize", resizeHandler);
+      canvasRef.current.removeEventListener("pointermove", pointerMoveHandler);
+      canvasRef.current.removeEventListener("pointerup", pointerUpHandler);
+      canvasRef.current.removeEventListener("pointerdown", pointerDownHandler);
+    };
   }, []);
 
   return (

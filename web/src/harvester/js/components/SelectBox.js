@@ -1,6 +1,7 @@
+// node_modules imports
 import React from "react";
-
-import "../sass/SelectBox.sass";
+// Style imports
+import "../../sass/SelectBox.sass";
 
 export default class SelectBox extends React.Component {
   constructor(props) {

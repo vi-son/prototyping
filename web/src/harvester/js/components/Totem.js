@@ -1,12 +1,17 @@
+// node_modules imports
 import React, { useRef, useEffect } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-
-import createLineGeometry from "./createLineGeometry.js";
-
-import "../sass/Totem.sass";
+// Local imports
+import createLineGeometry from "../utils/createLineGeometry.js";
+// Style imports
+import "../../sass/Totem.sass";
 
 export default ({ mapping }) => {
+  console.group("Totem");
+  console.log("Mapping:", mapping);
+  console.groupEnd();
+
   const canvasRef = useRef();
   const canvasWrapperRef = useRef();
 
@@ -99,8 +104,8 @@ export default ({ mapping }) => {
             )
           }
         },
-        vertexShader: require("../glsl/totem.vert.glsl"),
-        fragmentShader: require("../glsl/totem.frag.glsl")
+        vertexShader: require("../../glsl/totem.vert.glsl"),
+        fragmentShader: require("../../glsl/totem.frag.glsl")
       });
       var geometry = new THREE.PlaneGeometry(5, 5, 32);
       var plane = new THREE.Mesh(geometry, colorMaterial);
@@ -132,8 +137,8 @@ export default ({ mapping }) => {
     const numSides = 8;
     const subdivisions = 50;
     const tubeMaterial = new THREE.RawShaderMaterial({
-      vertexShader: require("../glsl/tubes.vert.glsl"),
-      fragmentShader: require("../glsl/tubes.frag.glsl"),
+      vertexShader: require("../../glsl/tubes.vert.glsl"),
+      fragmentShader: require("../../glsl/tubes.frag.glsl"),
       side: THREE.FrontSide,
       extensions: {
         deriviatives: true
@@ -262,8 +267,8 @@ export default ({ mapping }) => {
     );
     const backgroundScene = new THREE.Scene();
     const backgroundMaterial = new THREE.ShaderMaterial({
-      vertexShader: require("../glsl/background.vert.glsl"),
-      fragmentShader: require("../glsl/background.frag.glsl"),
+      vertexShader: require("../../glsl/background.vert.glsl"),
+      fragmentShader: require("../../glsl/background.frag.glsl"),
       uniforms: {
         uResolution: { value: new THREE.Vector2(size.width, size.height) }
       },

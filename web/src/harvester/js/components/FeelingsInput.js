@@ -1,10 +1,11 @@
+// node_modules imports
 import React, { useState, useEffect, useRef } from "react";
 import * as THREE from "three";
-import { WEBGL } from "../../shared/js/webgl.js";
+import { WEBGL } from "../../../shared/js/webgl.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import TWEEN from "@tweenjs/tween.js";
-
-import "../sass/FeelingsInput.sass";
+// Style imports
+import "../../sass/FeelingsInput.sass";
 
 // TODO: compatability check
 if (WEBGL.isWebGLAvailable()) {
@@ -259,7 +260,11 @@ export default ({ onSelect }) => {
       camera.updateProjectionMatrix();
       renderer.setSize(size.width, size.height);
     }
-    window.addEventListener("resize", onWindowResize, false);
+    const resizeHandler = window.addEventListener(
+      "resize",
+      onWindowResize,
+      false
+    );
 
     var render = function() {
       requestAnimationFrame(render);
@@ -268,6 +273,10 @@ export default ({ onSelect }) => {
       renderer.render(scene, camera);
     };
     render();
+
+    return () => {
+      window.removeEventListener("resize", resizeHandler);
+    };
   }, []);
 
   return (
