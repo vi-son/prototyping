@@ -2,10 +2,16 @@
 import React, { useRef, useEffect } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { PositionalAudioHelper } from "three/examples/jsm/helpers/PositionalAudioHelper.js";
 // Local imports
 import createLineGeometry from "../utils/createLineGeometry.js";
 // Style imports
 import "../../sass/Totem.sass";
+
+const remap = (v, a, b, c, d) => {
+  const newval = ((v - a) / (b - a)) * (d - c) + c;
+  return newval;
+};
 
 export default ({ mapping }) => {
   console.group("Totem");
@@ -15,14 +21,13 @@ export default ({ mapping }) => {
   const canvasRef = useRef();
   const canvasWrapperRef = useRef();
 
-  const audioSamples = mapping.map(e => e.sample);
-
   const colorMappings = mapping
-    .filter(m => m.type === "color")
+    .filter(m => m.type === "Farbe")
     .map((m, i) => {
       return {
         index: i,
-        color: m.mapping
+        color: m.mapping,
+        sample: m.sample
       };
     });
 
@@ -45,9 +50,9 @@ export default ({ mapping }) => {
       };
     });
 
-  console.log(feelingMappings);
-  console.log(colorMappings);
-  console.log(shapeMappings);
+  console.log(`# Color Mappings: ${colorMappings.length}`);
+  console.log(`# Shape Mappings: ${shapeMappings.length}`);
+  console.log(`# Feeling Mappings: ${feelingMappings.length}`);
 
   useEffect(() => {
     // Size
@@ -76,55 +81,58 @@ export default ({ mapping }) => {
     controls.dampingFactor = 0.2;
     // Audio listener
     const sounds = [];
+    const analysers = [];
     const listener = new THREE.AudioListener();
     camera.add(listener);
+    const samplesFolder = `/audio/harvester/`;
+
     // Light
     var light = new THREE.HemisphereLight(0xffffff, 0x666666, 3.75);
     light.position.set(0, 10, 0);
     scene.add(light);
 
     // Mappings
-    let colorMaterial;
-    if (colorMappings.length > 0) {
-      colorMaterial = new THREE.ShaderMaterial({
-        uniforms: {
-          u_color_point_count: { value: colorMappings.length - 1 },
-          u_resolution: { value: new THREE.Vector2(size.width, size.height) },
-          u_color_points: {
-            value: colorMappings.map(m => m.index / colorMappings.length)
-          },
-          u_colors: {
-            value: colorMappings.map(
-              m =>
-                new THREE.Vector3(
-                  m.color[0] / 255,
-                  m.color[1] / 255,
-                  m.color[2] / 255
-                )
-            )
-          }
-        },
-        vertexShader: require("../../glsl/totem.vert.glsl"),
-        fragmentShader: require("../../glsl/totem.frag.glsl")
-      });
-      var geometry = new THREE.PlaneGeometry(5, 5, 32);
-      var plane = new THREE.Mesh(geometry, colorMaterial);
-      // scene.add(plane);
-    }
+    // let colorMaterial;
+    // if (colorMappings.length > 0) {
+    //   colorMaterial = new THREE.ShaderMaterial({
+    //     uniforms: {
+    //       u_color_point_count: { value: colorMappings.length - 1 },
+    //       u_resolution: { value: new THREE.Vector2(size.width, size.height) },
+    //       u_color_points: {
+    //         value: colorMappings.map(m => m.index / colorMappings.length)
+    //       },
+    //       u_colors: {
+    //         value: colorMappings.map(
+    //           m =>
+    //             new THREE.Vector3(
+    //               m.color[0] / 255,
+    //               m.color[1] / 255,
+    //               m.color[2] / 255
+    //             )
+    //         )
+    //       }
+    //     },
+    //     vertexShader: require("../../glsl/totem.vert.glsl"),
+    //     fragmentShader: require("../../glsl/totem.frag.glsl")
+    //   });
+    //   var geometry = new THREE.PlaneGeometry(5, 5, 32);
+    //   var plane = new THREE.Mesh(geometry, colorMaterial);
+    //   // scene.add(plane);
+    // }
 
     // Bezier
-    var curve = new THREE.QuadraticBezierCurve3(
-      new THREE.Vector3(0, 0, 0),
-      ...feelingMappings.map(
-        (m, i) =>
-          new THREE.Vector3(
-            0.1 * Math.sin(m.feeling.point.x * Math.PI * 2.0),
-            i / feelingMappings.length,
-            0.1 * Math.cos(m.feeling.point.z * Math.PI * 2.0)
-          )
-      ),
-      new THREE.Vector3(0, 1, 0)
-    );
+    // var curve = new THREE.QuadraticBezierCurve3(
+    //   new THREE.Vector3(0, 0, 0),
+    //   ...feelingMappings.map(
+    //     (m, i) =>
+    //       new THREE.Vector3(
+    //         0.1 * Math.sin(m.feeling.point.x * Math.PI * 2.0),
+    //         i / feelingMappings.length,
+    //         0.1 * Math.cos(m.feeling.point.z * Math.PI * 2.0)
+    //       )
+    //   ),
+    //   new THREE.Vector3(0, 1, 0)
+    // );
 
     // var points = curve.getPoints(50);
     // var curveGeometry = new THREE.BufferGeometry().setFromPoints(points);
@@ -134,8 +142,16 @@ export default ({ mapping }) => {
     // scene.add(curveObject);
 
     // Tube material
-    const numSides = 8;
-    const subdivisions = 50;
+    const colors = colorMappings.map(
+      cm =>
+        new THREE.Vector3(
+          cm.color[0] / 255.0,
+          cm.color[1] / 255.0,
+          cm.color[2] / 255.0
+        )
+    );
+    const numSides = 6;
+    const subdivisions = 40;
     const tubeMaterial = new THREE.RawShaderMaterial({
       vertexShader: require("../../glsl/tubes.vert.glsl"),
       fragmentShader: require("../../glsl/tubes.frag.glsl"),
@@ -152,8 +168,16 @@ export default ({ mapping }) => {
           type: "vec2",
           value: new THREE.Vector2(size.width, size.height)
         },
-        uThickness: { type: "f", value: 0.005 },
+        uThickness: { type: "f", value: 0.05 },
         uTime: { type: "f", value: 2.5 },
+        uColors: {
+          type: "a",
+          value: colors
+        },
+        uAnalysers: {
+          type: "a",
+          value: [0, 0, 0, 0, 0]
+        },
         uRadialSegments: { type: "f", value: numSides },
         uPoints: {
           type: "a",
@@ -165,6 +189,54 @@ export default ({ mapping }) => {
         }
       }
     });
+
+    // Audio
+    const audioLoader = new THREE.AudioLoader();
+
+    //// COLOR MAPPING TOTEM
+    // Show audio sources
+    const cubes = [];
+    colorMappings.map((c, i) => {
+      const sampleFilepath = `${samplesFolder}${c.sample}`;
+      console.log(sampleFilepath);
+      const positionalAudio = new THREE.PositionalAudio(listener);
+      audioLoader.load(sampleFilepath, function(buffer) {
+        positionalAudio.setBuffer(buffer);
+        positionalAudio.setLoop(true);
+        positionalAudio.setVolume(1.0);
+        positionalAudio.play();
+        sounds.push(positionalAudio);
+        const analyser = new THREE.AudioAnalyser(positionalAudio, 32);
+        analyser.smoothingTimeConstant = 0.9;
+        analysers.push(analyser);
+      });
+
+      var geometry = new THREE.BoxBufferGeometry(0.5, 0.5, 0.5);
+      var material = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        opacity: 0,
+        transparent: true
+      });
+      var cube = new THREE.Mesh(geometry, material);
+      cube.position.set(0, i / (colorMappings.length - 1) - 0.5, 0);
+      cubes.push(cube);
+      var helper = new PositionalAudioHelper(positionalAudio);
+      positionalAudio.add(helper);
+      cube.add(positionalAudio);
+      // scene.add(cube);
+    });
+
+    const tubeGeometry = createLineGeometry(numSides, subdivisions);
+    const instTubeMaterial = tubeMaterial.clone();
+    instTubeMaterial.uniforms.uPoints.value = [
+      new THREE.Vector3(0, -0.5, 0),
+      new THREE.Vector3(0, 0, 0),
+      new THREE.Vector3(0, 0.5, 0)
+    ];
+    const tubeMesh = new THREE.Mesh(tubeGeometry, instTubeMaterial);
+    tubeMesh.frustumCulled = false;
+    scene.add(tubeMesh);
+    //// COLOR MAPPING TOTEM --- END
 
     // Spheres
     const feelingGroup = new THREE.Group();
@@ -187,9 +259,7 @@ export default ({ mapping }) => {
       );
       scene.add(sphere);
 
-      const samplePath = `/audio/harvester/${m.sample}`;
-      console.log(samplePath);
-      const sound = new THREE.PositionalAudio(listener);
+      //console.log(samplePath);
       var sphere = new THREE.SphereBufferGeometry();
       var object = new THREE.Mesh(
         sphere,
@@ -204,15 +274,6 @@ export default ({ mapping }) => {
       // group.position.set(loc);
       scene.add(group);
       // load a sound and set it as the Audio object's buffer
-      const audioLoader = new THREE.AudioLoader();
-      audioLoader.load(samplePath, function(buffer) {
-        sound.setBuffer(buffer);
-        sound.setLoop(true);
-        sound.setVolume(1.0);
-        sound.play();
-      });
-      sounds.push(sound);
-
       const tubeGeometry = createLineGeometry(numSides, subdivisions);
       const instTubeMaterial = tubeMaterial.clone();
       instTubeMaterial.uniforms.uPoints.value = [
@@ -224,7 +285,7 @@ export default ({ mapping }) => {
       tubeMesh.frustumCulled = false;
       feelingGroup.add(tubeMesh);
     });
-    scene.add(feelingGroup);
+    // scene.add(feelingGroup);
 
     // Geometry
     // var sphereGeometry = new THREE.SphereBufferGeometry(1, 32, 12);
@@ -280,21 +341,34 @@ export default ({ mapping }) => {
     renderer.autoClear = false;
 
     // Render loop
+    let frameCount = 0;
     var render = function() {
       requestAnimationFrame(render);
       time = clock.getElapsedTime();
-      feelingGroup.children.forEach(f => {
-        f.material.uniforms.uTime.value = time;
-      });
+
       renderer.clear();
       renderer.render(backgroundPlane, backgroundCamera);
       renderer.render(scene, camera);
+
+      // Analyzers
+      let analyzerValues = analysers.map((analyser, i) => {
+        var data = analyser.getAverageFrequency();
+        const val = remap(data, 0.0, 127.0, 0.1, 0.5);
+        const valNorm = remap(data, 0.0, 127.0, 0.0, 1.0);
+        cubes[i].scale.set(val, val, val);
+        return valNorm;
+      });
+      if (analyzerValues.length > 0) {
+        tubeMesh.material.uniforms.uAnalysers.value = analyzerValues;
+      }
+      tubeMesh.material.uniforms.uTime.value = time;
+      frameCount++;
     };
     render();
 
     return () => {
       sounds.forEach(s => {
-        console.log(s);
+        console.log(`Stopping ${s}`);
         s.stop();
       });
     };

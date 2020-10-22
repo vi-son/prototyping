@@ -10,11 +10,11 @@ import "../../sass/Finish.sass";
 // JSON imports
 import data from "../../json/example-mapping.json";
 
-function Finish({ mappingJson }) {
+function Finish({ json }) {
   const history = useHistory();
   const canvasRef = useRef();
 
-  const mappings = mappingJson !== undefined ? JSON.parse(mappingJson) : [];
+  const mappings = json !== undefined ? JSON.parse(json) : [];
 
   const prepareDownload = () => {
     const downloadLink = document.createElement("a");

@@ -92,6 +92,7 @@ const Flow = ({ onFinish }) => {
     const availableSamples = groupSamples.get(selectedGroup);
     const randomSampleIdx = getRandomInt(0, availableSamples.length - 1);
     const selectedSample = availableSamples[randomSampleIdx];
+    console.log(selectedGroup, selectedSample);
     setCurrentMapping(
       Object.assign({}, currentMapping, {
         sample: selectedSample,
@@ -104,8 +105,8 @@ const Flow = ({ onFinish }) => {
   };
 
   const moveToNextScenario = e => {
-    setCompletedCount(completedCount + 1);
     setMappings([...mappings, ...[currentMapping]]);
+    setCompletedCount(completedCount + 1);
   };
 
   const onRestartWorkflow = e => {
@@ -115,15 +116,13 @@ const Flow = ({ onFinish }) => {
   };
 
   useEffect(() => {
-    prepareNextScenario();
-  }, []);
-
-  useEffect(() => {
+    // console.log(mappings.length);
+    // console.log(mappings);
     if (completedCount === scenarioCount) {
       onFinish(JSON.stringify(mappings), history);
     } else {
       selectBoxRef.current.init();
-      if (completedCount < scenarioCount - 1) {
+      if (completedCount < scenarioCount) {
         prepareNextScenario();
       }
     }

@@ -1,0 +1,42 @@
+[
+  {
+    "sample": "montez-sample-03-pad-01.mp3",
+    "group": "chords",
+    "type": "Farbe",
+    "mapping": [
+      0,
+      255,
+      0
+    ]
+  },
+  {
+    "sample": "montez-sample-02-main-git.mp3",
+    "group": "guitar",
+    "type": "Farbe",
+    "mapping": [
+      254,
+      255,
+      43
+    ]
+  },
+  {
+    "sample": "montez-sample-08-e-perc-01.mp3",
+    "group": "rhythm",
+    "type": "Farbe",
+    "mapping": [
+      56,
+      231,
+      255
+    ]
+  },
+  {
+    "sample": "montez-sample-18-e-bass-01.mp3",
+    "group": "bass",
+    "type": "Farbe",
+    "mapping": [
+      255,
+      22,
+      27
+    ]
+  }
+]

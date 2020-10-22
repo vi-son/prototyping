@@ -10,7 +10,7 @@ import Finish from "./routes/Finish.js";
 const Harvester = () => {
   const [mappingJson, setMappingJson] = useState(undefined);
 
-  const exampleMapping = require("../json/montez.json");
+  // const exampleMapping = require("../json/montez.json");
 
   return (
     <Router
@@ -33,7 +33,7 @@ const Harvester = () => {
           />
         </Route>
         <Route path="/harvester.html/result">
-          <Finish mappingJson={mappingJson} />
+          <Finish json={mappingJson} />
         </Route>
       </Switch>
     </Router>

@@ -77,7 +77,7 @@ class AudioPlayer extends React.Component {
     this.audio.src = this.props.audiosrc;
   }
 
-  componentWillReceiveProps(nextProps) {
+  componentDidUpdate(nextProps) {
     if (!this.audio.src.includes(nextProps.audiosrc)) {
       this.audio.src = nextProps.audiosrc;
     }
