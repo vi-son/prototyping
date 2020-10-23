@@ -1,7 +1,11 @@
+precision highp float;
+precision highp int;
+
 #pragma glslify: pillow = require("../../shared/glsl/shader-library/pillow")
 
 #define PI 3.14159
 
+uniform int uStopCount;
 uniform vec2 uResolution;
 uniform vec3 uColors[5];
 uniform float uAnalysers[5];
@@ -36,36 +40,18 @@ vec3 hsb_2_rgb( in vec3 c ){
 
 void main() {
   float d = vViewPosition.x;
-
   vec3 color = vec3(0);
 
-  float stride = 1.0 / 4.0;
+  float stepSize = 1.0 / float(uStopCount - 1);
+  for (int i = 0; i < 5; i++) {
+    if (i == uStopCount) break;
+    float t_prev = smoothstep(float(i) * stepSize, float(i + 1) * stepSize, d);
+    float t_next = smoothstep(float(i - 1) * stepSize, float(i) * stepSize, d);
+    vec3 color_stop = uColors[i] * vec3(t_next - t_prev);
+    vec3 color_hsv = color_stop;
+    color_stop *= 0.5 + uAnalysers[i];
+    color += color_stop;
+  }
 
-  float t1 = 1.0 - smoothstep(0.0, stride, d);
-  vec3 color1 = uColors[0];
-  color1 *= uAnalysers[0];
-  color += color1 * t1;
-
-  float t2 = 1.0 - smoothstep(stride, 2.0 * stride, d) - t1;
-  vec3 color2 = uColors[1];
-  color2.z = 0.5 + uAnalysers[1];
-  color += color2 * t2;
-
-  float t3 = 1.0 - smoothstep(2.0 * stride, 3.0 * stride, d) - t1 - t2;
-  vec3 color3 = uColors[2];
-  color3 *= uAnalysers[2];
-  color += color3 * t3;
-
-  float t4 = 1.0 - smoothstep(3.0 * stride, 4.0 * stride, d) - t1 - t2 - t3;
-  vec3 color4 = uColors[3];
-  color4 *= uAnalysers[3];
-  color += color4 * t4;
-
-  float t5 = 1.0 - smoothstep(4.0 * stride, 5.0 * stride, d) - t1 - t2 - t3 - t4;
-  vec3 color5 = uColors[4];
-  color5 *= uAnalysers[4];
-  color += color5 * t5;
-
-  // vec3 color = mix(uColors[0]* uAnalysers[0], uColors[1]* uAnalysers[1], d);
   gl_FragColor = vec4(color, 1.0);
 }

@@ -1,3 +1,6 @@
+precision highp float;
+precision highp int;
+
 attribute float position;
 attribute float angle;
 attribute vec2 uv;
@@ -12,7 +15,10 @@ uniform float index;
 uniform float uRadialSegments;
 uniform float animateRadius;
 uniform float animateStrength;
+
 uniform vec3 uPoints[3];
+
+uniform int uStopCount;
 uniform float uAnalysers[5];
 
 varying vec2 vUv;
@@ -54,9 +60,9 @@ vec3 sample (float t) {
   float x = t;
   float y = 0.01;
   float z = 0.01;
-  vec3 interp = mix(start, end, t);
-  i.z = sin(t * PI + end.z * 10.0 + uTime * 3.0) / 10.0;
-  i.x = cos(t * PI + end.x * 10.0 + uTime * 1.75) / 10.0;
+  float intense = mix(uAnalysers[0], uAnalysers[4], t);
+  i.z = sin(t * PI + end.z * 3.0 + uTime * 1.75) / 5.0;
+  i.x = sin(t * PI + end.x * 3.0 + uTime * 1.95) / 5.0;
   return i;
 }
 
@@ -89,7 +95,7 @@ void createTube (float t, vec2 volume, out vec3 offset, out vec3 normal) {
 void main() {
   // Remap from [-0.5, 0.5] to [0, 1]
   float t = (position * 2.0) * 0.5 + 0.5;
-  int index = int(t) * 4;
+  int index = int(t) * uStopCount;
   vec2 volume = vec2(uThickness + uAnalysers[index] / 10.0 * (sin(t * PI) + 1.0));
 
   vec3 transformed;

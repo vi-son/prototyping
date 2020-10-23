@@ -10,7 +10,11 @@ import Finish from "./routes/Finish.js";
 const Harvester = () => {
   const [mappingJson, setMappingJson] = useState(undefined);
 
-  // const exampleMapping = require("../json/montez.json");
+  const exampleMapping = JSON.stringify(
+    require("../json/example.color.20201023.json")
+  );
+  console.log(exampleMapping);
+  return <Finish json={exampleMapping}></Finish>;
 
   return (
     <Router

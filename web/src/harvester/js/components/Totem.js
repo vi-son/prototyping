@@ -150,8 +150,8 @@ export default ({ mapping }) => {
           cm.color[2] / 255.0
         )
     );
-    const numSides = 6;
-    const subdivisions = 40;
+    const numSides = 4;
+    const subdivisions = 50;
     const tubeMaterial = new THREE.RawShaderMaterial({
       vertexShader: require("../../glsl/tubes.vert.glsl"),
       fragmentShader: require("../../glsl/tubes.frag.glsl"),
@@ -168,7 +168,7 @@ export default ({ mapping }) => {
           type: "vec2",
           value: new THREE.Vector2(size.width, size.height)
         },
-        uThickness: { type: "f", value: 0.05 },
+        uThickness: { type: "f", value: 0.02 },
         uTime: { type: "f", value: 2.5 },
         uColors: {
           type: "a",
@@ -179,12 +179,13 @@ export default ({ mapping }) => {
           value: [0, 0, 0, 0, 0]
         },
         uRadialSegments: { type: "f", value: numSides },
+        uStopCount: { type: "i", value: colorMappings.length },
         uPoints: {
           type: "a",
           value: [
-            new THREE.Vector3(0, -1, 0),
+            new THREE.Vector3(0, -3, 0),
             new THREE.Vector3(0, 0, 0),
-            new THREE.Vector3(0, 1, 0)
+            new THREE.Vector3(0, 3, 0)
           ]
         }
       }
@@ -231,7 +232,7 @@ export default ({ mapping }) => {
     instTubeMaterial.uniforms.uPoints.value = [
       new THREE.Vector3(0, -0.5, 0),
       new THREE.Vector3(0, 0, 0),
-      new THREE.Vector3(0, 0.5, 0)
+      new THREE.Vector3(0, +0.5, 0)
     ];
     const tubeMesh = new THREE.Mesh(tubeGeometry, instTubeMaterial);
     tubeMesh.frustumCulled = false;
