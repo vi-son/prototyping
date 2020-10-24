@@ -245,10 +245,10 @@ export default ({ mapping }) => {
           var icosahedronGeometry = new THREE.IcosahedronGeometry(0.25, 0);
           var icosahedron = new THREE.Mesh(
             icosahedronGeometry,
-            material.clone()
+            shapeMaterial.clone()
           );
           icosahedron.scale.set(0.2, 0.2, 0.2);
-          icosahedron.position.set(0.0, i / 5.0, 0);
+          icosahedron.position.copy(position);
           icosahedron.lookAt(new THREE.Vector3(0, 0, 0));
           icosahedron.rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.PI / 2.0);
           shapeGroup.add(icosahedron);
@@ -272,7 +272,7 @@ export default ({ mapping }) => {
       const dirVector = new THREE.Vector3().sub(position);
       dirVector.normalize();
       points.push(dirVector.multiplyScalar(-0.15));
-      points.push(position.clone());
+      points.push(position.clone().multiplyScalar(0.9));
       const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
       const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
       const line = new THREE.Line(lineGeometry, lineMaterial);
@@ -322,11 +322,25 @@ export default ({ mapping }) => {
     backgroundScene.add(backgroundPlane);
     renderer.autoClear = false;
 
+    function onWindowResize() {
+      let size = canvasWrapperRef.current.getBoundingClientRect();
+      camera.aspect = size.width / size.height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(size.width, size.height);
+    }
+    const resizeHandler = window.addEventListener(
+      "resize",
+      onWindowResize,
+      false
+    );
+
     // Render loop
     let frameCount = 0;
+    let $dt = 0;
     var render = function() {
       requestAnimationFrame(render);
       time = clock.getElapsedTime();
+      $dt = clock.getDelta();
 
       renderer.clear();
       renderer.render(backgroundPlane, backgroundCamera);
@@ -350,6 +364,9 @@ export default ({ mapping }) => {
           obj.material.color = shapeMaterial.color
             .clone()
             .multiplyScalar(val * 1.0);
+          // obj.rotation.z += val / 10.0;
+          // obj.rotation.x += val / 10.0;
+          // obj.rotation.y += val / 10.0;
         }
       });
       tubeMesh.material.uniforms.uTime.value = time;
@@ -361,6 +378,7 @@ export default ({ mapping }) => {
       sounds.forEach(s => {
         console.log(`Stopping ${s}`);
         s.stop();
+        window.removeEventListener("resize", resizeHandler);
       });
     };
   }, []);
