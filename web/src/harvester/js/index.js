@@ -14,7 +14,7 @@ const Harvester = () => {
     require("../json/verena.2020.10.24.json")
   );
   console.log(exampleMapping);
-  return <Finish json={exampleMapping}></Finish>;
+  // return <Finish json={exampleMapping}></Finish>;
 
   return (
     <Router
