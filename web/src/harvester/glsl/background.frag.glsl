@@ -21,8 +21,8 @@ void main() {
   vec2 uv = gl_FragCoord.xy / uResolution;
   vec3 color = vec3(0.0);
 
-  vec4 color_a = vec4(22.0 / 255.0, 18.0 / 255.0, 60.0 / 255.0, 1.0);
-  vec4 color_b = vec4(57.0 / 255.0, 53.0 / 255.0, 90.0 / 255.0, 1.0);
+  vec4 color_a = vec4(105.0 / 255.0, 108.0 / 255.0, 112.0 / 255.0, 1.0);
+  vec4 color_b = vec4(144.0 / 255.0, 150.0 / 255.0, 154.0 / 255.0, 1.0);
 
   vec2 gamma = vec2(6.0);
   

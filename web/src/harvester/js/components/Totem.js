@@ -32,7 +32,7 @@ export default ({ mapping }) => {
     });
 
   const shapeMappings = mapping
-    .filter(m => m.type === "shape")
+    .filter(m => m.type === "Form")
     .map((m, i) => {
       return {
         index: i,
@@ -57,8 +57,10 @@ export default ({ mapping }) => {
   useEffect(() => {
     // Size
     const size = canvasWrapperRef.current.getBoundingClientRect();
+
     // Scene
     const scene = new THREE.Scene();
+
     // Renderer
     const renderer = new THREE.WebGLRenderer({
       canvas: canvasRef.current,
@@ -66,6 +68,7 @@ export default ({ mapping }) => {
       alpha: true
     });
     renderer.setSize(size.width, size.height);
+
     // Camera
     var camera = new THREE.PerspectiveCamera(
       45,
@@ -91,56 +94,6 @@ export default ({ mapping }) => {
     light.position.set(0, 10, 0);
     scene.add(light);
 
-    // Mappings
-    // let colorMaterial;
-    // if (colorMappings.length > 0) {
-    //   colorMaterial = new THREE.ShaderMaterial({
-    //     uniforms: {
-    //       u_color_point_count: { value: colorMappings.length - 1 },
-    //       u_resolution: { value: new THREE.Vector2(size.width, size.height) },
-    //       u_color_points: {
-    //         value: colorMappings.map(m => m.index / colorMappings.length)
-    //       },
-    //       u_colors: {
-    //         value: colorMappings.map(
-    //           m =>
-    //             new THREE.Vector3(
-    //               m.color[0] / 255,
-    //               m.color[1] / 255,
-    //               m.color[2] / 255
-    //             )
-    //         )
-    //       }
-    //     },
-    //     vertexShader: require("../../glsl/totem.vert.glsl"),
-    //     fragmentShader: require("../../glsl/totem.frag.glsl")
-    //   });
-    //   var geometry = new THREE.PlaneGeometry(5, 5, 32);
-    //   var plane = new THREE.Mesh(geometry, colorMaterial);
-    //   // scene.add(plane);
-    // }
-
-    // Bezier
-    // var curve = new THREE.QuadraticBezierCurve3(
-    //   new THREE.Vector3(0, 0, 0),
-    //   ...feelingMappings.map(
-    //     (m, i) =>
-    //       new THREE.Vector3(
-    //         0.1 * Math.sin(m.feeling.point.x * Math.PI * 2.0),
-    //         i / feelingMappings.length,
-    //         0.1 * Math.cos(m.feeling.point.z * Math.PI * 2.0)
-    //       )
-    //   ),
-    //   new THREE.Vector3(0, 1, 0)
-    // );
-
-    // var points = curve.getPoints(50);
-    // var curveGeometry = new THREE.BufferGeometry().setFromPoints(points);
-    // var curveMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
-    // var curveObject = new THREE.Line(curveGeometry, curveMaterial);
-    // curveObject.position.set(0, -0.5, 0);
-    // scene.add(curveObject);
-
     // Tube material
     const colors = colorMappings.map(
       cm =>
@@ -150,6 +103,16 @@ export default ({ mapping }) => {
           cm.color[2] / 255.0
         )
     );
+    const colorToUniformsArray = new Array(mapping.length)
+      .fill(0)
+      .map((_, i) => {
+        if (colors[i]) {
+          return colors[i];
+        } else {
+          return new THREE.Vector3();
+        }
+      });
+    console.log(colorToUniformsArray);
     const numSides = 4;
     const subdivisions = 50;
     const tubeMaterial = new THREE.RawShaderMaterial({
@@ -172,11 +135,11 @@ export default ({ mapping }) => {
         uTime: { type: "f", value: 2.5 },
         uColors: {
           type: "a",
-          value: colors
+          value: colorToUniformsArray
         },
         uAnalysers: {
           type: "a",
-          value: [0, 0, 0, 0, 0]
+          value: new Array(mapping.length).fill(0)
         },
         uRadialSegments: { type: "f", value: numSides },
         uStopCount: { type: "i", value: colorMappings.length },
@@ -193,25 +156,22 @@ export default ({ mapping }) => {
 
     // Audio
     const audioLoader = new THREE.AudioLoader();
-
-    //// COLOR MAPPING TOTEM
     // Show audio sources
-    const cubes = [];
-    colorMappings.map((c, i) => {
+    const audioVisualizerCubes = [];
+    mapping.map((c, i) => {
       const sampleFilepath = `${samplesFolder}${c.sample}`;
       console.log(sampleFilepath);
       const positionalAudio = new THREE.PositionalAudio(listener);
+      const analyser = new THREE.AudioAnalyser(positionalAudio, 32);
       audioLoader.load(sampleFilepath, function(buffer) {
         positionalAudio.setBuffer(buffer);
         positionalAudio.setLoop(true);
         positionalAudio.setVolume(1.0);
         positionalAudio.play();
         sounds.push(positionalAudio);
-        const analyser = new THREE.AudioAnalyser(positionalAudio, 32);
         analyser.smoothingTimeConstant = 0.9;
         analysers.push(analyser);
       });
-
       var geometry = new THREE.BoxBufferGeometry(0.5, 0.5, 0.5);
       var material = new THREE.MeshBasicMaterial({
         color: 0xffffff,
@@ -220,12 +180,108 @@ export default ({ mapping }) => {
       });
       var cube = new THREE.Mesh(geometry, material);
       cube.position.set(0, i / (colorMappings.length - 1) - 0.5, 0);
-      cubes.push(cube);
+      audioVisualizerCubes.push(cube);
       var helper = new PositionalAudioHelper(positionalAudio);
       positionalAudio.add(helper);
       cube.add(positionalAudio);
       // scene.add(cube);
     });
+
+    //// SHAPE MAPPING TOTEMa
+    var shapeMaterial = new THREE.MeshLambertMaterial({ color: 0xcfddec });
+    const shapeGroup = new THREE.Group();
+    const radius = 0.5;
+    shapeMappings.map((s, i) => {
+      console.log(s);
+      const yStep = i / shapeMappings.length - 0.5;
+      const position = new THREE.Vector3(
+        radius * Math.sin(Math.random() * 3.1415 * 2.0),
+        yStep,
+        radius * Math.cos(Math.random() * 3.1415 * 2.0)
+      );
+      switch (s.shape) {
+        case "Zylinder":
+          var cylinderGeometry = new THREE.CylinderGeometry(0.2, 0.2, 0.5, 32);
+          var cylinder = new THREE.Mesh(
+            cylinderGeometry,
+            shapeMaterial.clone()
+          );
+          cylinder.scale.set(0.2, 0.2, 0.2);
+          cylinder.position.copy(position);
+          cylinder.lookAt(new THREE.Vector3(0, 0, 0));
+          cylinder.rotateOnAxis(new THREE.Vector3(1, 0, 0), Math.PI / 2.0);
+          shapeGroup.add(cylinder);
+          break;
+
+        case "Würfel":
+          const cubeGeometry = new THREE.BoxGeometry(0.4, 0.4, 0.4);
+          const cube = new THREE.Mesh(cubeGeometry, shapeMaterial.clone());
+          cube.scale.set(0.2, 0.2, 0.2);
+          cube.position.copy(position);
+          cube.lookAt(new THREE.Vector3(0, 0, 0));
+          cube.rotateOnAxis(new THREE.Vector3(1, 0, 0), Math.PI / 2.0);
+          shapeGroup.add(cube);
+          break;
+
+        case "Kugel":
+          const sphereGeometry = new THREE.SphereBufferGeometry(0.26, 32, 32);
+          const sphere = new THREE.Mesh(sphereGeometry, shapeMaterial.clone());
+          sphere.scale.set(0.15, 0.15, 0.15);
+          sphere.position.copy(position);
+          shapeGroup.add(sphere);
+          break;
+
+        case "Kegel":
+          const coneGeometry = new THREE.ConeGeometry(0.2, 0.5, 30);
+          const cone = new THREE.Mesh(coneGeometry, shapeMaterial.clone());
+          cone.scale.set(0.2, 0.2, 0.2);
+          cone.position.copy(position);
+          cone.lookAt(new THREE.Vector3(0, 0, 0));
+          cone.rotateOnAxis(new THREE.Vector3(1, 0, 0), Math.PI / 2.0);
+          shapeGroup.add(cone);
+          break;
+
+        case "Ikosaeder":
+          var icosahedronGeometry = new THREE.IcosahedronGeometry(0.25, 0);
+          var icosahedron = new THREE.Mesh(
+            icosahedronGeometry,
+            material.clone()
+          );
+          icosahedron.scale.set(0.2, 0.2, 0.2);
+          icosahedron.position.set(0.0, i / 5.0, 0);
+          icosahedron.lookAt(new THREE.Vector3(0, 0, 0));
+          icosahedron.rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.PI / 2.0);
+          shapeGroup.add(icosahedron);
+          break;
+
+        case "Oktaeder":
+          var octahedronGeometry = new THREE.OctahedronGeometry(0.25, 0);
+          var octahedron = new THREE.Mesh(
+            octahedronGeometry,
+            shapeMaterial.clone()
+          );
+          octahedron.position.copy(position);
+          octahedron.scale.set(0.2, 0.2, 0.2);
+          octahedron.lookAt(new THREE.Vector3(0, 0, 0));
+          octahedron.rotateOnAxis(new THREE.Vector3(0, 1, 0), Math.PI / 2.0);
+          shapeGroup.add(octahedron);
+          break;
+      }
+      // Line
+      const points = [];
+      const dirVector = new THREE.Vector3().sub(position);
+      dirVector.normalize();
+      points.push(dirVector.multiplyScalar(-0.15));
+      points.push(position.clone());
+      const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+      const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
+      const line = new THREE.Line(lineGeometry, lineMaterial);
+      scene.add(line);
+    });
+    scene.add(shapeGroup);
+
+    //// COLOR MAPPING TOTEM
+    colorMappings.map((c, i) => {});
 
     const tubeGeometry = createLineGeometry(numSides, subdivisions);
     const instTubeMaterial = tubeMaterial.clone();
@@ -237,81 +293,6 @@ export default ({ mapping }) => {
     const tubeMesh = new THREE.Mesh(tubeGeometry, instTubeMaterial);
     tubeMesh.frustumCulled = false;
     scene.add(tubeMesh);
-    //// COLOR MAPPING TOTEM --- END
-
-    // Spheres
-    const feelingGroup = new THREE.Group();
-    feelingMappings.map(m => {
-      var sphereGeometry = new THREE.SphereBufferGeometry(0.05, 32, 12);
-      var sphereMaterial = new THREE.MeshPhongMaterial({
-        color: 0x0332b3,
-        flatShading: true
-      });
-      var sphere = new THREE.Mesh(sphereGeometry, colorMaterial);
-      const loc = new THREE.Vector3(
-        m.feeling.point.x,
-        m.feeling.point.y,
-        m.feeling.point.z
-      );
-      sphere.position.set(
-        m.feeling.point.x,
-        m.feeling.point.y,
-        m.feeling.point.z
-      );
-      scene.add(sphere);
-
-      //console.log(samplePath);
-      var sphere = new THREE.SphereBufferGeometry();
-      var object = new THREE.Mesh(
-        sphere,
-        new THREE.MeshBasicMaterial(0xff0000)
-      );
-      var box = new THREE.Box3();
-      box.setFromCenterAndSize(loc, new THREE.Vector3(0.1, 0.1, 0.1));
-      var helper = new THREE.Box3Helper(box, 0xff0000);
-      var group = new THREE.Group();
-      group.add(helper);
-      group.add(sound);
-      // group.position.set(loc);
-      scene.add(group);
-      // load a sound and set it as the Audio object's buffer
-      const tubeGeometry = createLineGeometry(numSides, subdivisions);
-      const instTubeMaterial = tubeMaterial.clone();
-      instTubeMaterial.uniforms.uPoints.value = [
-        new THREE.Vector3(0, -0.5, 0),
-        new THREE.Vector3(m.feeling.point.x, 0, m.feeling.point.z),
-        loc
-      ];
-      const tubeMesh = new THREE.Mesh(tubeGeometry, instTubeMaterial);
-      tubeMesh.frustumCulled = false;
-      feelingGroup.add(tubeMesh);
-    });
-    // scene.add(feelingGroup);
-
-    // Geometry
-    // var sphereGeometry = new THREE.SphereBufferGeometry(1, 32, 12);
-    // var sphereMaterial = new THREE.MeshPhongMaterial({
-    //   color: 0x0332b3,
-    //   flatShading: true
-    // });
-    // sphereMaterial.depthTest = false;
-    // var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-    // sphere.position.set(0, 0, 0);
-    // scene.add(sphere);
-
-    //// TUBES
-    // Camera
-    // const camera = new THREE.OrthographicCamera(
-    //   size.width / -100,
-    //   size.width / +100,
-    //   size.width / +100,
-    //   size.width / -100,
-    //   0.1,
-    //   100
-    // );
-
-    // audioSamples.map(sample => {
-    // });
 
     // Clock + timings
     var clock = new THREE.Clock();
@@ -356,12 +337,21 @@ export default ({ mapping }) => {
         var data = analyser.getAverageFrequency();
         const val = remap(data, 0.0, 127.0, 0.1, 0.5);
         const valNorm = remap(data, 0.0, 127.0, 0.0, 1.0);
-        cubes[i].scale.set(val, val, val);
         return valNorm;
       });
       if (analyzerValues.length > 0) {
         tubeMesh.material.uniforms.uAnalysers.value = analyzerValues;
       }
+      shapeGroup.children.forEach((obj, i) => {
+        if (analysers[i]) {
+          var data = analysers[i].getAverageFrequency();
+          const val = remap(data, 0.0, 127.0, 0.1, 0.5);
+          obj.scale.set(val, val, val);
+          obj.material.color = shapeMaterial.color
+            .clone()
+            .multiplyScalar(val * 1.0);
+        }
+      });
       tubeMesh.material.uniforms.uTime.value = time;
       frameCount++;
     };
