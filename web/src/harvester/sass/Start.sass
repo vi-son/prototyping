@@ -1,0 +1,49 @@
+.two-columns
+  padding: 60px
+  .left
+    display: flex
+    flex-direction: column
+    justify-content: flex-start
+    align-items: flex-start
+    .heading
+      margin-bottom: 40px
+    .text
+      color: var(--color-darkness)
+  .right
+    height: 90vh
+    display: flex
+    flex-direction: column
+    justify-content: flex-end
+    .illustration-wrapper
+      padding: 0
+      margin: 0
+      width: 100%
+      position: relative
+      display: flex
+      svg
+        width: 100%
+      
+
+.start-button
+  background: var(--color-curacao)
+  color: var(--color-snow)
+  display: flex
+  flex-direction: column
+  padding: 40px 50px
+  margin: 0
+  border: 0
+  margin: 10px
+  font-size: 1rem
+  cursor: pointer
+  text-transform: lowercase
+  letter-spacing: 0.01rem
+  margin-top: 30px
+  transition: background 200ms ease, box-shadow 300ms ease
+  &:hover
+    color: var(--color-snow)
+    background: var(--color-darkness)
+  &:disabled
+    opacity: 0.05
+    background: 0
+    &:hover
+      box-shadow: none

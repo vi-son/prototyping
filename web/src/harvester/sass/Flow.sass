@@ -33,3 +33,11 @@
     background: var(--color-curacao)
     color: var(--color-snow)
     transition: background 200ms ease
+    &:hover
+      color: var(--color-snow)
+      background: var(--color-darkness)
+    &:disabled
+      opacity: 0.05
+      background: 0
+      &:hover
+        box-shadow: none

@@ -14,7 +14,7 @@ const Harvester = () => {
     require("../json/example.color.20201023.json")
   );
   console.log(exampleMapping);
-  return <Finish json={exampleMapping}></Finish>;
+  // return <Finish json={exampleMapping}></Finish>;
 
   return (
     <Router

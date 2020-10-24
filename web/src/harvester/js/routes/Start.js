@@ -3,17 +3,18 @@ import React from "react";
 import { Link } from "react-router-dom";
 // Local imports
 import Layout from "../Layout.js";
+// SVG imports
+import Illustration from "../../../../assets/svg/audiovisio/title-illustration.svg";
+// Style imports
+import "../../sass/Start.sass";
 
 function Start() {
   return (
-    <Layout>
+    <Layout className="audiovis-io">
       <main className="two-columns">
         <div className="left">
-          <img src="/img/harvester.png" />
-        </div>
-        <div className="right">
-          <h2>Willkommen</h2>
-          <article>
+          <h2 className="heading">Willkommen</h2>
+          <article className="text">
             Herzlich willkommen, du bist im Begriff Kunst zu machen. In den
             nächsten Minuten kannst du uns helfen, kreativ zu sein. Kreativität
             braucht eine Grundlage, eine Inspiration. Und diese Grundlage wollen
@@ -28,10 +29,15 @@ function Start() {
             Yeah!
           </article>
         </div>
+        <div className="right">
+          <div className="illustration-wrapper">
+            <Illustration />
+          </div>
+          <Link className="start-button" to="/flow">
+            Loslegen
+          </Link>
+        </div>
       </main>
-      <Link className="flow-button" to="/flow">
-        Start
-      </Link>
     </Layout>
   );
 }
