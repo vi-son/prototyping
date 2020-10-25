@@ -187,9 +187,38 @@ export default ({ mapping }) => {
     });
 
     //// FEELING MAPPING TOTEM
+    const feelingCurves = [];
+    const feelingsGroup = new THREE.Group();
+    const feelingSpheres = [];
+    var bezierMaterial = new THREE.LineBasicMaterial({ color: 0x2b13ff });
+    var feelingMaterial = new THREE.MeshLambertMaterial({
+      color: 0x2b13ff,
+      side: THREE.DoubleSide,
+      flatShading: true
+    });
     feelingMappings.map((f, i) => {
       console.log("Feeling", f.feeling.point);
+      const point = f.feeling.point;
+      const position = new THREE.Vector3(point.x, point.y, point.z);
+      const sphereGeometry = new THREE.SphereBufferGeometry(0.26, 32, 32);
+      const feelingSphere = new THREE.Mesh(sphereGeometry, feelingMaterial);
+      feelingSphere.scale.set(0.15, 0.15, 0.15);
+      feelingSphere.position.copy(position);
+      scene.add(feelingSphere);
+      feelingSpheres.push(feelingSphere);
+      var curve = new THREE.QuadraticBezierCurve3(
+        new THREE.Vector3(0, -1, 0),
+        position,
+        new THREE.Vector3(0, 1, 0)
+      );
+      feelingCurves.push(curve);
+      var points = curve.getPoints(40);
+      var bezierGeometry = new THREE.BufferGeometry().setFromPoints(points);
+      // Create the final object to add to the scene
+      var bezierObject = new THREE.Line(bezierGeometry, bezierMaterial);
+      feelingsGroup.add(bezierObject);
     });
+    scene.add(feelingsGroup);
 
     //// SHAPE MAPPING TOTEM
     var shapeMaterial = new THREE.MeshLambertMaterial({ color: 0xcfddec });
@@ -368,6 +397,25 @@ export default ({ mapping }) => {
           obj.material.color = shapeMaterial.color
             .clone()
             .multiplyScalar(val * 1.0);
+        }
+      });
+      feelingsGroup.children.forEach((curveObj, i) => {
+        if (analysers[i]) {
+          var data = analysers[i].getAverageFrequency();
+          const val = remap(data, 0.0, 127.0, 0.1, 0.5);
+          var curve = feelingCurves[i];
+          var newCenter = curve.getPointAt(0.5).multiplyScalar(val * 10);
+          var newCurve = new THREE.QuadraticBezierCurve3(
+            curve.getPointAt(0.3),
+            newCenter,
+            curve.getPointAt(0.7)
+          );
+          feelingSpheres[i].position.copy(newCenter);
+          // Update vertices
+          var points = newCurve.getPoints(40);
+          curveObj.geometry = new THREE.BufferGeometry().setFromPoints(points);
+          curveObj.geometry.verticesNeedUpdate = true;
+          curveObj.geometry.attributes.position.needsUpdate = true;
         }
       });
       tubeMesh.material.uniforms.uTime.value = time;
