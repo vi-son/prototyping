@@ -11,7 +11,7 @@ const Harvester = () => {
   const [mappingJson, setMappingJson] = useState(undefined);
 
   const exampleMapping = JSON.stringify(
-    require("../json/example.feelings.20201025.json")
+    require("../json/example.mapping20201025-16.11.json")
   );
   console.log(exampleMapping);
   // return <Finish json={exampleMapping}></Finish>;
