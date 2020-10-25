@@ -37,34 +37,43 @@ const Flow = ({ onFinish }) => {
   );
 
   const [groupSamples] = useState(new Map());
-  groupSamples.set("synthesizer", ["montez-sample-01-lead-synth.mp3"]);
+  groupSamples.set("synthesizer", [
+    "05-synthesizer/montez-sample-01-lead-synth.mp3",
+    "05-synthesizer/montez-sample-19-lead-synth-02.mp3"
+  ]);
 
   groupSamples.set("guitar", [
-    "montez-sample-02-main-git.mp3",
-    "montez-sample-17-arp-git.mp3"
+    "03-guitar/montez-sample-02-main-git.mp3",
+    "03-guitar/montez-sample-17-arp-git.mp3",
+    "03-guitar/montez-sample-22-wah-git.mp3",
+    "03-guitar/montez-sample-23-chords-git.mp3",
+    "03-guitah/montez-sample-25-somh-git.mp3"
   ]);
 
   groupSamples.set("chords", [
-    "montez-sample-03-pad-01.mp3",
-    "montez-sample-04-pad-02.mp3",
-    "montez-sample-05-pad-03.mp3",
-    "montez-sample-16-keys-02.mp3",
-    "montez-sample-14-keys-01.mp3"
+    "02-chords/montez-sample-03-pad-01.mp3",
+    "02-chords/montez-sample-04-pad-02.mp3",
+    "02-chords/montez-sample-05-pad-03.mp3",
+    "02-chords/montez-sample-14-keys-01.mp3",
+    "02-chords/montez-sample-16-keys-02.mp3",
+    "02-chords/montez-sample-21-keys-03.mp3"
   ]);
 
   groupSamples.set("bass", [
-    "montez-sample-06-synth-bass-02.mp3",
-    "montez-sample-07-synth-bass-01.mp3",
-    "montez-sample-18-e-bass-01.mp3"
+    "01-bass/montez-sample-06-synth-bass-02.mp3",
+    "01-bass/montez-sample-07-synth-bass-01.mp3",
+    "01-bass/montez-sample-18-e-bass-01.mp3",
+    "01-bass/montez-sample-20-e-bass-02.mp3"
   ]);
 
   groupSamples.set("rhythm", [
-    "montez-sample-08-e-perc-01.mp3",
-    "montez-sample-09-e-perc-02.mp3",
-    "montez-sample-10-e-drums-01.mp3",
-    "montez-sample-11-shaker.mp3",
-    "montez-sample-12-toms.mp3",
-    "montez-sample-13-hh.mp3"
+    "04-rhythm/montez-sample-08-e-perc-01.mp3",
+    "04-rhythm/montez-sample-09-e-perc-02.mp3",
+    "04-rhythm/montez-sample-10-e-drums-01.mp3",
+    "04-rhythm/montez-sample-11-shaker.mp3",
+    "04-rhythm/montez-sample-12-toms.mp3",
+    "04-rhythm/montez-sample-13-hh.mp3",
+    "04-rhythm/montez-sample-24-e-perc-03.mp3"
   ]);
 
   const [seenSamples, setSeenSamples] = useState([]);
@@ -137,7 +146,7 @@ const Flow = ({ onFinish }) => {
           <AudioPlayer
             ref={audioPlayerRef}
             fadeDuration={fadeDuration}
-            audiosrc={`/audio/harvester/${currentMapping.sample}`}
+            audiosrc={`/audio/audiovisio/${currentMapping.sample}`}
             onStopped={moveToNextScenario}
           />
         ) : (

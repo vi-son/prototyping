@@ -95,8 +95,10 @@ void createTube (float t, vec2 volume, out vec3 offset, out vec3 normal) {
 void main() {
   // Remap from [-0.5, 0.5] to [0, 1]
   float t = (position * 2.0) * 0.5 + 0.5;
-  int index = int(t) * 5;
-  vec2 volume = vec2(uThickness + uAnalysers[index] / 10.0 * (sin(t * PI) + 1.0));
+  int index = int(t) * 4;
+  float audio = uAnalysers[index] / 10.0;
+  audio = clamp(audio, 0.01, 0.25);
+  vec2 volume = vec2(uThickness + audio * (sin(t * PI) + 1.0));
 
   vec3 transformed;
   vec3 objectNormal;
