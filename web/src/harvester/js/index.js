@@ -11,10 +11,10 @@ const Harvester = () => {
   const [mappingJson, setMappingJson] = useState(undefined);
 
   const exampleMapping = JSON.stringify(
-    require("../json/verena.2020.10.24.json")
+    require("../json/example.feelings.20201025.json")
   );
   console.log(exampleMapping);
-  // return <Finish json={exampleMapping}></Finish>;
+  return <Finish json={exampleMapping}></Finish>;
 
   return (
     <Router

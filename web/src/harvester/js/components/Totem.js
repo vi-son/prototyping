@@ -41,7 +41,7 @@ export default ({ mapping }) => {
     });
 
   const feelingMappings = mapping
-    .filter(m => m.type === "feeling")
+    .filter(m => m.type === "Gefühl")
     .map((m, i) => {
       return {
         index: i,
@@ -87,7 +87,7 @@ export default ({ mapping }) => {
     const analysers = [];
     const listener = new THREE.AudioListener();
     camera.add(listener);
-    const samplesFolder = `/audio/harvester/`;
+    const samplesFolder = `./audio/harvester/`;
 
     // Light
     var light = new THREE.HemisphereLight(0xffffff, 0x666666, 3.75);
@@ -112,7 +112,6 @@ export default ({ mapping }) => {
           return new THREE.Vector3();
         }
       });
-    console.log(colorToUniformsArray);
     const numSides = 4;
     const subdivisions = 50;
     const tubeMaterial = new THREE.RawShaderMaterial({
@@ -187,7 +186,12 @@ export default ({ mapping }) => {
       // scene.add(cube);
     });
 
-    //// SHAPE MAPPING TOTEMa
+    //// FEELING MAPPING TOTEM
+    feelingMappings.map((f, i) => {
+      console.log("Feeling", f.feeling.point);
+    });
+
+    //// SHAPE MAPPING TOTEM
     var shapeMaterial = new THREE.MeshLambertMaterial({ color: 0xcfddec });
     const shapeGroup = new THREE.Group();
     const radius = 0.5;
@@ -323,10 +327,10 @@ export default ({ mapping }) => {
     renderer.autoClear = false;
 
     function onWindowResize() {
-      let size = canvasWrapperRef.current.getBoundingClientRect();
-      camera.aspect = size.width / size.height;
+      let newSize = canvasWrapperRef.current.getBoundingClientRect();
+      camera.aspect = newSize.width / newSize.height;
       camera.updateProjectionMatrix();
-      renderer.setSize(size.width, size.height);
+      renderer.setSize(newSize.width, newSize.height);
     }
     const resizeHandler = window.addEventListener(
       "resize",
@@ -364,9 +368,6 @@ export default ({ mapping }) => {
           obj.material.color = shapeMaterial.color
             .clone()
             .multiplyScalar(val * 1.0);
-          // obj.rotation.z += val / 10.0;
-          // obj.rotation.x += val / 10.0;
-          // obj.rotation.y += val / 10.0;
         }
       });
       tubeMesh.material.uniforms.uTime.value = time;
