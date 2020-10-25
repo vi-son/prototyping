@@ -116,8 +116,6 @@ const Flow = ({ onFinish }) => {
   };
 
   useEffect(() => {
-    // console.log(mappings.length);
-    // console.log(mappings);
     if (completedCount === scenarioCount) {
       onFinish(JSON.stringify(mappings), history);
     } else {

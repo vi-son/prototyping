@@ -87,7 +87,7 @@ export default ({ mapping }) => {
     const analysers = [];
     const listener = new THREE.AudioListener();
     camera.add(listener);
-    const samplesFolder = `./audio/harvester/`;
+    const samplesFolder = `/audio/harvester/`;
 
     // Light
     var light = new THREE.HemisphereLight(0xffffff, 0x666666, 3.75);
