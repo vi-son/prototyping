@@ -14,10 +14,6 @@ const remap = (v, a, b, c, d) => {
 };
 
 export default ({ mapping }) => {
-  console.group("Totem");
-  console.log("Mapping:", mapping);
-  console.groupEnd();
-
   const canvasRef = useRef();
   const canvasWrapperRef = useRef();
 
@@ -159,7 +155,6 @@ export default ({ mapping }) => {
     const audioVisualizerCubes = [];
     mapping.map((c, i) => {
       const sampleFilepath = `${samplesFolder}${c.sample}`;
-      console.log(sampleFilepath);
       const positionalAudio = new THREE.PositionalAudio(listener);
       const analyser = new THREE.AudioAnalyser(positionalAudio, 32);
       audioLoader.load(sampleFilepath, function(buffer) {
@@ -197,7 +192,6 @@ export default ({ mapping }) => {
       flatShading: true
     });
     feelingMappings.map((f, i) => {
-      console.log("Feeling", f.feeling.point);
       const point = f.feeling.point;
       const position = new THREE.Vector3(point.x, point.y, point.z);
       const sphereGeometry = new THREE.SphereBufferGeometry(0.26, 32, 32);
@@ -225,7 +219,6 @@ export default ({ mapping }) => {
     const shapeGroup = new THREE.Group();
     const radius = 0.5;
     shapeMappings.map((s, i) => {
-      console.log(s);
       const yStep = i / shapeMappings.length - 0.5;
       const position = new THREE.Vector3(
         radius * Math.sin(Math.random() * 3.1415 * 2.0),
@@ -425,7 +418,6 @@ export default ({ mapping }) => {
 
     return () => {
       sounds.forEach(s => {
-        console.log(`Stopping ${s}`);
         s.stop();
         window.removeEventListener("resize", resizeHandler);
       });

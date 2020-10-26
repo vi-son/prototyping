@@ -47,7 +47,7 @@ const Flow = ({ onFinish }) => {
     "03-guitar/montez-sample-17-arp-git.mp3",
     "03-guitar/montez-sample-22-wah-git.mp3",
     "03-guitar/montez-sample-23-chords-git.mp3",
-    "03-guitah/montez-sample-25-somh-git.mp3"
+    "03-guitar/montez-sample-25-somh-git.mp3"
   ]);
 
   groupSamples.set("chords", [
@@ -101,7 +101,6 @@ const Flow = ({ onFinish }) => {
     const availableSamples = groupSamples.get(selectedGroup);
     const randomSampleIdx = getRandomInt(0, availableSamples.length - 1);
     const selectedSample = availableSamples[randomSampleIdx];
-    console.log(selectedGroup, selectedSample);
     setCurrentMapping(
       Object.assign({}, currentMapping, {
         sample: selectedSample,

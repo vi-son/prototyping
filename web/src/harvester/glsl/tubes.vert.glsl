@@ -97,7 +97,7 @@ void main() {
   float t = (position * 2.0) * 0.5 + 0.5;
   int index = int(t) * 4;
   float audio = uAnalysers[index] * 10.0;
-  audio = clamp(audio, 0.01, 5.0);
+  audio = clamp(audio, 0.1, 5.0);
   vec2 volume = audio * vec2(uThickness * (sin(t * PI)));
 
   vec3 transformed;

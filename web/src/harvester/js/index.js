@@ -13,7 +13,6 @@ const Harvester = () => {
   const exampleMapping = JSON.stringify(
     require("../json/example.mapping20201025-16.11.json")
   );
-  console.log(exampleMapping);
   // return <Finish json={exampleMapping}></Finish>;
 
   return (
