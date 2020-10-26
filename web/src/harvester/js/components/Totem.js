@@ -165,7 +165,7 @@ export default ({ mapping }) => {
       audioLoader.load(sampleFilepath, function(buffer) {
         positionalAudio.setBuffer(buffer);
         positionalAudio.setLoop(true);
-        positionalAudio.setVolume(1.0);
+        positionalAudio.setVolume(0.2);
         positionalAudio.play();
         sounds.push(positionalAudio);
         analyser.smoothingTimeConstant = 0.9;
